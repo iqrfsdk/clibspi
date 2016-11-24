@@ -626,13 +626,6 @@ int spi_iqrf_init(const char *dev)
   }
 
   while (1) {
-  //enable CE0 for TR communication
-  initResult = gpio_setup(RPIIO_PIN_CE0, GPIO_DIRECTION_OUT, 0);
-  if (initResult < 0)
-  {
-    break;
-	//return BASE_TYPES_OPER_ERROR;
-  }
 
   // enable PWR for TR communication
   initResult = gpio_setup(RESET_GPIO, GPIO_DIRECTION_OUT, 1);
@@ -690,7 +683,6 @@ int spi_iqrf_init(const char *dev)
   }
   else {
 	gpio_cleanup(RESET_GPIO);
-	gpio_cleanup(RPIIO_PIN_CE0);
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -988,7 +980,6 @@ int spi_iqrf_destroy(void)
 
   // destroy used rpi_io library
   gpio_cleanup(RESET_GPIO);
-  gpio_cleanup(RPIIO_PIN_CE0);
 
   if (fd == NO_FILE_DESCRIPTOR)
   {
