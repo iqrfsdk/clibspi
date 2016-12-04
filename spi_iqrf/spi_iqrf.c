@@ -49,10 +49,10 @@ int nanosleep(int time)
   return 0;
 }
 
-struct timespec {
-  unsigned tv_sec;
-  unsigned tv_nsec;
-};
+//struct timespec {
+//  unsigned tv_sec;
+//  unsigned tv_nsec;
+//};
 
 #endif
 
