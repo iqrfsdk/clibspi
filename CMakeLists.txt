@@ -2,6 +2,8 @@ project(clibspi)
 
 cmake_minimum_required(VERSION 2.8)
 
+find_package(JNI)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -34,7 +36,13 @@ message(STATUS "CMAKE_C_FLAGS_DEBUG:     ${CMAKE_C_FLAGS_DEBUG}")
 # endif(MACHINE)
 
 add_subdirectory(spi_iqrf)
-add_subdirectory(spi_javastub)
+
+if (JNI_FOUND)
+  add_subdirectory(spi_javastub)
+else()
+  message("Java not found => spi_javastub cannot be configured")
+endif()
+
 add_subdirectory(sysfs_gpio)
 add_subdirectory(examples)
 

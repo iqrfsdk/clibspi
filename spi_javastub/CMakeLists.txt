@@ -1,8 +1,5 @@
 set(_name spi_javastub)
 
-find_package(Java REQUIRED)
-find_package(JNI REQUIRED)
-
 if (JNI_FOUND)
 	message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
 	message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
