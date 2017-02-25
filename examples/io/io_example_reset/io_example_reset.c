@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,13 +35,14 @@ int main(void) {
 
     // switch off the power
     ret = gpio_setup(RESET_GPIO, GPIO_DIRECTION_OUT, 0);
-    if (ret)
-	    return;
+    if (ret) {
+      return -1;
+    }
 
     // sleep for 50 ms
     //nanosleep(&sleepValue, NULL);
     SLEEP(10);
-        
+
     // switch on the power
     ret = gpio_setValue(RESET_GPIO, 1);
 
