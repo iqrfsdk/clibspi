@@ -35,8 +35,9 @@ int main(void) {
   // enable access to GPIOs
   ret = gpio_setup(LED_GPIO, GPIO_DIRECTION_OUT, 0);
   ret |= gpio_setup(BUTTON_GPIO, GPIO_DIRECTION_IN, 0);
-  if (ret)
-    return;
+  if (ret) {
+    return -1;
+  }
 
   // 10 s loop for button testing
   for (i = 0; i < 1000; i++) {
