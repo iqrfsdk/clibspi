@@ -16,10 +16,10 @@ before_install:
   - docker pull ubuntu:16.04
   - docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/iqrfsdk -td ubuntu:16.04 /bin/bash
 install:
-  - docker exec travis-ci bash -c "apt-get update"
-  - docker exec travis-ci bash -c "apt-get install -y build-essential cmake clang linux-libc-dev"
-  - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
+  - docker exec -ti travis-ci bash -c "apt-get update"
+  - docker exec -ti travis-ci bash -c "apt-get install -y build-essential cmake clang linux-libc-dev"
+  - if [[ "$BUILD_SPI_JAVASTUB" == 1 ]]; then docker exec -ti travis-ci bash -c "apt-get install -y default-jre default-jdk"; fi
 script:
-  - docker exec travis-ci bash -c "cd /iqrfsdk && CC=${CC} CXX=${CXX} bash buildMake.sh"
+  - docker exec -ti travis-ci bash -c "cd /iqrfsdk && CC=${CC} CXX=${CXX} bash buildMake.sh"
 after_script:
   - docker stop travis-ci
