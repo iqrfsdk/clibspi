@@ -203,8 +203,8 @@ JNIEXPORT jshortArray JNICALL Java_com_microrisc_rpi_spi_iqrf_SimpleSPI_1Master_
 
     // auxiliary buffer - for use in SetShortArrayRegion function
     jshort* jBuffer = malloc(dataLen * sizeof(jshort));
-    if ( readBuffer == NULL ) {
-        JNU_ThrowByName(env, "java/lang/OutOfMemoryError", "Cannot allocate read buffer");
+    if ( jBuffer == NULL ) {
+        JNU_ThrowByName(env, "java/lang/OutOfMemoryError", "Cannot allocate auxiliary buffer");
         return NULL;
     }
 
