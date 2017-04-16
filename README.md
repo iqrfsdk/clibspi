@@ -1,6 +1,7 @@
 # SPI-IQRF
 
 [![Build Status](https://travis-ci.org/iqrfsdk/clibspi.svg?branch=master)](https://travis-ci.org/iqrfsdk/clibspi)
+[![Build Status](https://img.shields.io/appveyor/ci/spinarr/clibspi/master.svg)](https://ci.appveyor.com/project/spinarr/clibspi)
 
 SPI master driver for Raspberry Pi support of IQRF DCTR-5xDx and 7xDx transceiver modules with `OS v3.08D and higher`.
 IQRF module is connected to Raspberry Pi platform via [KON-RASP-01](http://www.iqrf.org/products/kon-rasp-01).
