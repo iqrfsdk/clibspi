@@ -207,6 +207,86 @@ SPI_IQRF_DECLSPEC int spi_iqrf_write(void *dataToWrite, unsigned int dataLen);
 SPI_IQRF_DECLSPEC int spi_iqrf_read(void *readBuffer, unsigned int dataLen);
 
 /**
+* Reads TR Module Info from SPI
+*
+* @param	readBuffer	- TR module info is read to this buffer
+* @param	dataLen		- length (in bytes) of the data, at least 16B
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
+* @return	@c BASE_TYPES_OPER_OK = data were successfully read
+*/
+SPI_IQRF_DECLSPEC int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen);
+
+/**
+* Upload configuration data to SPI. Low level API for cutils and clibtr.
+*
+* @param        target          - Target for upload:
+*                                   RFPMG_TARGET           = 0x01
+*                                   RFBAND_TARGET          = 0x02
+*                                   ACCESS_PWD_TARGET      = 0x03
+*                                   USER_KEY_TARGET        = 0x04
+*                                   FLASH_TARGET           = 0x05
+*                                   INTERNAL_EEPROM_TARGET = 0x06
+*                                   EXTERNAL_EEPROM_TARGET = 0x07
+*                                   SPECIAL_TARGET         = 0x08
+* @param	dataToWrite	- data to be written to SPI
+* @param	dataLen		- length (in bytes) of the data
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
+* @return	@c BASE_TYPES_OPER_OK = data were successfully read
+*/
+SPI_IQRF_DECLSPEC int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int dataLen);
+
+/**
+* Download configuration data from SPI. Low level API for cutils and clibtr.
+*
+* @param        target          - Target for download:
+*                                   RFPMG_TARGET           = 0x01
+*                                   RFBAND_TARGET          = 0x02
+*                                   ACCESS_PWD_TARGET      = 0x03
+*                                   USER_KEY_TARGET        = 0x04
+*                                   FLASH_TARGET           = 0x05
+*                                   INTERNAL_EEPROM_TARGET = 0x06
+*                                   EXTERNAL_EEPROM_TARGET = 0x07
+*                                   SPECIAL_TARGET         = 0x08
+* @param	dataToWrite	- data to be written to SPI
+* @param	writeLen		- length (in bytes) of the data
+* @param	readBuffer	- data are read to this buffer
+* @param	readLen		- length (in bytes) of the data to read
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
+* @return	@c BASE_TYPES_OPER_OK = data were successfully read
+*/
+SPI_IQRF_DECLSPEC int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int writeLen, unsigned char *readBuffer, unsigned int readLen);
+
+/**
+* Enter programming mode
+*
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode entry
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c BASE_TYPES_OPER_OK = Programming mode entry successfull
+*/
+SPI_IQRF_DECLSPEC int spi_iqrf_pe(void);
+
+/**
+* Terminate programming mode
+*
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode termination
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c BASE_TYPES_OPER_OK = Programming mode termination successfull
+*/
+
+SPI_IQRF_DECLSPEC int spi_iqrf_pt(void);
+
+/**
  * Terminates the library and frees up used resources.
  *
  * @return	@c BASE_TYPES_OPER_OK if operation has performed successfully.
