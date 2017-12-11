@@ -79,17 +79,12 @@ int nanosleep(int time)
 
 static uint64_t get_ms_ts()
 {
-    LARGE_INTEGER tcounter;
-    LARGE_INTEGER freq;    
-    LARGE_INTEGER tick_value;
+    LARGE_INTEGER counter, frequency;
 
-    if (QueryPerformanceFrequency (&tcounter) != 0)
-        freq = tcounter.QuadPart;
-    
-    if (QueryPerformanceCounter (&tcounter) != 0)
-        tick_value = tcounter.QuadPart;
-    
-    return (tick_value - prev_tick_value) / (freq / 1000);
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&counter);
+
+	return counter.QuadPart / (frequency.QuadPart / 1000);
 }
 
 #endif
