@@ -1,4 +1,4 @@
-# SPI-IQRF
+﻿# SPI-IQRF
 
 [![Build Status](https://travis-ci.org/iqrfsdk/clibspi.svg?branch=master)](https://travis-ci.org/iqrfsdk/clibspi)
 [![Build Status](https://img.shields.io/appveyor/ci/spinarr/clibspi/master.svg)](https://ci.appveyor.com/project/spinarr/clibspi)
@@ -19,8 +19,8 @@ Library contais following folders
 ├── examples                      Examples of SPI-IQRF lib usage
 │   ├── io
 │   │   ├── io_example_button
-│   │   ├── io_example_led
-│   │   └── io_example_reset
+│   │   └── io_example_led
+│   │   
 │   └── spi
 │       └── spi_example_dpa       Example of DPA communication via SPI
 ├── include                       Folder contains header files for SPI-IQRF src

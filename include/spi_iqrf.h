@@ -1,4 +1,4 @@
-/* 
+﻿/*
  * Copyright 2015 MICRORISC s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +20,8 @@
  * up on 'gpio' static library.
  *
  * @file		spi_iqrf.h
- * @version		1.1
- * @date		26.5.2016
+ * @version		1.2
+ * @date		21.2.2018
  */
 
 #ifndef __SPI_IQRF_H
@@ -42,6 +42,10 @@ extern "C" {
 
 #define SPI_IQRF_DECLSPEC
 
+/** SPI device name size */
+// Constant is used to specify array. Therefore, they can not be defined as static const uint8_t.
+#define SPI_DEV_CAPACITY 255
+
 /** IQRF SPI Error constants. */
 typedef enum spi_iqrf_Errors {
 	///< An enum constant representing results without errors
@@ -51,7 +55,7 @@ typedef enum spi_iqrf_Errors {
 	///< An enum constant representing operation on not initialized library
 	BASE_TYPES_LIB_NOT_INITIALIZED = -2,
 	///< An enum constant representing bad gpio_getValue of SPI Status was returned from SPI device
-	SPI_IQRF_ERROR_BAD_STATUS = -10, 
+	SPI_IQRF_ERROR_BAD_STATUS = -10,
 	///< An enum constant representing the spi iqrf error CRCS mismatch
 	SPI_IQRF_ERROR_CRCS = -11 /**< CRCS mismatch */
 } spi_iqrf_Errors;
@@ -68,7 +72,7 @@ typedef enum spi_iqrf_SPIStatus_DataNotReady {
 	///< An enum constant representing that SPI is not ready (buffer full, last CRCM O.K.).
 	///	Data in bufferCOM is protected against overwriting by next transmission from the master.
 	SPI_IQRF_SPI_BUFF_PROTECT = 0x3F,
-	///< An enum constant representing that SPI is not ready (buffer full, last CRCM error). 
+	///< An enum constant representing that SPI is not ready (buffer full, last CRCM error).
 	SPI_IQRF_SPI_CRCM_ERR = 0x3E,
 	///< An enum constant representing that SPI is ready � communication mode
 	SPI_IQRF_SPI_READY_COMM = 0x80,
@@ -94,7 +98,7 @@ typedef struct spi_iqrf_SPIStatus {
 		/** Current status of SPI in case, that data is not ready. */
 		spi_iqrf_SPIStatus_DataNotReady dataNotReadyStatus;
 		/** Count of available data in case of data redady response.*/
-		int dataReady; 
+		int dataReady;
 	};
 } spi_iqrf_SPIStatus;
 
@@ -103,12 +107,12 @@ typedef struct spi_iqrf_SPIStatus {
  */
 typedef enum spi_iqrf_CommonConstants {
 	///< An enum consant representing maximal length of data to be write or read to or from SPI slave.
-	SPI_IQRF_MAX_DATA_LENGTH = 128 
+	SPI_IQRF_MAX_DATA_LENGTH = 128
 } spi_iqrf_CommonConstants;
 
 /**
  * Defines an alias representing IQRF communication modes.
- * 
+ *
  * @remark Communication mode depends on used IQRF module.
  * @remark Default communication mode is low speed for 5x modules.
  */
@@ -120,6 +124,16 @@ typedef enum _spi_iqrf_CommunicationMode
 	SPI_IQRF_HIGH_SPEED_MODE
 } spi_iqrf_CommunicationMode;
 
+typedef struct spi_iqrf_config_struct
+{
+  /** Device file name*/
+  char spiDev[SPI_DEV_CAPACITY+1];
+  uint8_t resetGpioPin;
+  uint8_t spiCe0GpioPin;
+  uint8_t spiMisoGpioPin;
+  uint8_t spiMosiGpioPin;
+  uint8_t spiClkGpioPin;
+} spi_iqrf_config_struct;
 
 /** Default SPI device. */
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
@@ -146,6 +160,16 @@ SPI_IQRF_DECLSPEC int spi_iqrf_init(const char *dev);
  * 			is already initialized.
  */
 SPI_IQRF_DECLSPEC int spi_iqrf_initDefault(void);
+
+/**
+* Initialization of the SPI for IQRF module with advanced setting
+*
+* @param	configStruct - advaced configuration structure
+*
+* @return	@c BASE_TYPES_OPER_ERROR = initialization failed
+* @return	@c BASE_TYPES_OPER_OK = initialization was correct
+*/
+SPI_IQRF_DECLSPEC int spi_iqrf_initAdvanced(spi_iqrf_config_struct *configStruct);
 
 /**
  * Get actual communication mode of IQRF SPI library.

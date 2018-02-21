@@ -1,4 +1,3 @@
 add_subdirectory(io_example_led)
 add_subdirectory(io_example_button)
-add_subdirectory(io_example_reset)
 

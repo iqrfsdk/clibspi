@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 //#include <linux/types.h>
+#include "machines_def.h"
 #include "spi_iqrf.h"
 #include "sleepWrapper.h"
 
@@ -82,6 +83,9 @@ int communicationOpen = -1;
 /** DPA response. */
 T_DPA_PACKET dpaResponsePacket;
 
+/** SPI IQRF configuration structure */
+spi_iqrf_config_struct mySpiIqrfConfig;
+
 /**
  * Main entry-point for this application.
  *
@@ -107,6 +111,13 @@ int main(void)
 
     for (i = 0; i < 3; ++i)
     {
+        pulseLed(COORDINATOR_ADDRESS, Green);
+        //nanosleep(&delayTime, 0);
+        SLEEP(TIME_BETWEEN_LEDS_MS);
+        pulseLed(COORDINATOR_ADDRESS, Red);
+        //nanosleep(&delayTime, 0);
+        SLEEP(TIME_BETWEEN_LEDS_MS);
+
         pulseLed(BROADCAST_ADDRESS, Green);
         //nanosleep(&delayTime, 0);
         SLEEP(TIME_BETWEEN_LEDS_MS);
@@ -155,7 +166,14 @@ int openCommunication(void)
 {
     int operResult;
 
-    operResult = spi_iqrf_init("/dev/spidev0.0");
+    strcpy (mySpiIqrfConfig.spiDev, "/dev/spidev0.0");
+    mySpiIqrfConfig.resetGpioPin = RESET_GPIO;
+    mySpiIqrfConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
+    mySpiIqrfConfig.spiMisoGpioPin = MISO_GPIO;
+    mySpiIqrfConfig.spiMosiGpioPin = MOSI_GPIO;
+    mySpiIqrfConfig.spiClkGpioPin = SCLK_GPIO;
+
+    operResult = spi_iqrf_initAdvanced(&mySpiIqrfConfig);
     if (operResult < 0)
     {
         printf("Initialization failed: %d \n", operResult);
@@ -210,11 +228,14 @@ spi_iqrf_SPIStatus tryToWaitForReadyState(uint32_t timeout)
     //struct timespec sleepValue = {0, INTERVAL_MS};
     uint8_t buffer[64];
     unsigned int dataLen = 0;
+    uint16_t memStatus = 0x8000;
+    uint16_t repStatCounter = 1;
 
     do
     {
         if (elapsedTime > timeout)
         {
+            printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
             printf("Timeout of waiting on ready state expired\n");
             return spiStatus;
         }
@@ -231,16 +252,25 @@ spi_iqrf_SPIStatus tryToWaitForReadyState(uint32_t timeout)
         }
         else
         {
-            printf("Status: %x \n\r", spiStatus.dataNotReadyStatus);
+            if (memStatus != spiStatus.dataNotReadyStatus)
+            {
+              if (memStatus != 0x8000)
+              {
+                printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+              }
+              memStatus = spiStatus.dataNotReadyStatus;
+              repStatCounter = 1;
+            }
+            else repStatCounter++;
         }
 
         if (spiStatus.isDataReady == 1)
         {
-
             // reading - only to dispose old data if any
             spi_iqrf_read(buffer, spiStatus.dataReady);
         }
     } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_COMM);
+    printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
     return spiStatus;
 }
 
@@ -257,12 +287,14 @@ spi_iqrf_SPIStatus tryToWaitForDataReadyState(uint32_t timeout)
     spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
     int operResult = -1;
     uint32_t elapsedTime = 0;
-    //struct timespec sleepValue = {0, INTERVAL_MS};
+    uint16_t memStatus = 0x8000;
+    uint16_t repStatCounter = 1;
 
     do
     {
         if (elapsedTime > timeout)
         {
+            printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
             printf("Timeout of waiting on data ready state expired\n");
             return spiStatus;
         }
@@ -279,9 +311,19 @@ spi_iqrf_SPIStatus tryToWaitForDataReadyState(uint32_t timeout)
         }
         else
         {
-            printf("Status: %x \n\r", spiStatus.dataNotReadyStatus);
+          if (memStatus != spiStatus.dataNotReadyStatus)
+          {
+            if (memStatus != 0x8000)
+            {
+              printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+            }
+            memStatus = spiStatus.dataNotReadyStatus;
+            repStatCounter = 1;
+          }
+          else repStatCounter++;
         }
     } while (spiStatus.isDataReady != 1);
+    printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
     return spiStatus;
 }
 
@@ -307,7 +349,7 @@ void pulseLed(uint16_t address, LedColor_t color)
         message.Request.PNUM = PNUM_LEDG;
     }
 
-    executeDpaCommand(&message.Buffer, sizeof(TDpaIFaceHeader));
+    executeDpaCommand((const uint8_t *)&message.Buffer, sizeof(TDpaIFaceHeader));
 }
 
 /**
@@ -331,7 +373,7 @@ int executeDpaCommand(const uint8_t *dpaMessage, int dataLen)
     }
 
     // sending some data to TR module
-    int operResult = spi_iqrf_write(dpaMessage, dataLen);
+    int operResult = spi_iqrf_write((uint8_t *)dpaMessage, dataLen);
     if (operResult)
     {
         printErrorAndExit("Error during data sending", 0, operResult);

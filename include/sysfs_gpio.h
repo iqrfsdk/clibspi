@@ -95,7 +95,7 @@ SYSFS_GPIO_DECLSPEC int gpio_getValue(int gpio);
 SYSFS_GPIO_DECLSPEC int gpio_setup(int gpio, gpio_direction dir, int val);
 
 // cleanup gpio
-SYSFS_GPIO_DECLSPEC void gpio_cleanup(int gpio);
+// SYSFS_GPIO_DECLSPEC void gpio_cleanup(int gpio);
+SYSFS_GPIO_DECLSPEC int gpio_cleanup(int gpio);
 
 #endif // SYSFS_GPIO_H
-

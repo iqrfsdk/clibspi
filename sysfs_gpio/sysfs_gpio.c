@@ -47,7 +47,7 @@
 * @param [in]	gpio		GPIO
 * @param [in]	action		action
 * @param [in]	target		target
-* @param [in]	len			length 
+* @param [in]	len			length
 *
 */
 static void setup_gpio_path(const int gpio, const char *action, char *target, int len)
@@ -345,9 +345,9 @@ int gpio_setup(int gpio, gpio_direction dir, int val)
 * @return	0 = operation was performed successfully.
 * @return	-1 = some error occurred.
 */
-void gpio_cleanup(int gpio)
+//void gpio_cleanup(int gpio)
+int gpio_cleanup(int gpio)
 {
 	//	gpio_setValue(gpio, 0);
-	gpio_unexport(gpio);
+	return (gpio_unexport(gpio));
 }
-
