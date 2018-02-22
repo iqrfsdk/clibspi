@@ -1,5 +1,6 @@
 ﻿/*
  * Copyright 2015 MICRORISC s.r.o.
+ * Copyright 2018 IQRF Tech s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +20,8 @@
  * between Linux system and TR modules using SPI and IO. IO functionality is build
  * up on 'gpio' static library.
  *
- * @file		spi_iqrf.h
- * @version		1.2
- * @date		21.2.2018
+ * @file		  spi_iqrf.h
+ * @date		  21.2.2018
  */
 
 #ifndef __SPI_IQRF_H
