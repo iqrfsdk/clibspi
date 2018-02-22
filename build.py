@@ -86,13 +86,15 @@ def build(generator, build_dir, debug):
     os.chdir(build_dir)
 
     if sys.platform.startswith("win"):
-        send_command("cmake -G " + "\"" + generator + "\" " + current_dir)
+        out = send_command("cmake -G " + "\"" + generator + "\" " + current_dir)
+        print(out)
     else:
-        send_command("cmake -G " + "\"" + generator + "\" " + current_dir + " " + debug)
+        out = send_command("cmake -G " + "\"" + generator + "\" " + current_dir + " " + debug)
+        print(out)
 
     os.chdir(current_dir)
-    send_command("cmake --build " + build_dir)
-
+    out = send_command("cmake --build " + build_dir)
+    print(out)
 
 if __name__ == "__main__":
     main()
