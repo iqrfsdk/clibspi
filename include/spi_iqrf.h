@@ -169,7 +169,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_initDefault(void);
 * @return	@c BASE_TYPES_OPER_ERROR = initialization failed
 * @return	@c BASE_TYPES_OPER_OK = initialization was correct
 */
-SPI_IQRF_DECLSPEC int spi_iqrf_initAdvanced(spi_iqrf_config_struct *configStruct);
+SPI_IQRF_DECLSPEC int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct);
 
 /**
  * Get actual communication mode of IQRF SPI library.

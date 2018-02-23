@@ -714,7 +714,7 @@ int spi_iqrf_initDefault()
 * @return	@c BASE_TYPES_OPER_ERROR = initialization failed
 * @return	@c BASE_TYPES_OPER_OK = initialization was correct
 */
-int spi_iqrf_initAdvanced(spi_iqrf_config_struct *configStruct)
+int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 {
   int32_t ioResult = 0;
   int32_t initResult = 0;
