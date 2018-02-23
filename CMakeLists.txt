@@ -43,6 +43,7 @@ else()
   message("Java not found => spi_javastub cannot be configured")
 endif()
 
+add_subdirectory(include)
 add_subdirectory(sysfs_gpio)
 add_subdirectory(examples)
 
