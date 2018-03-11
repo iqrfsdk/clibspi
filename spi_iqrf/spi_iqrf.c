@@ -1,19 +1,19 @@
 /*
-* Copyright 2015 MICRORISC s.r.o.
-* Copyright 2018 IQRF Tech s.r.o.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2015 MICRORISC s.r.o.
+ * Copyright 2018 IQRF Tech s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,12 +80,12 @@ int nanosleep(int time)
 
 static uint64_t get_ms_ts()
 {
-  LARGE_INTEGER counter, frequency;
+    LARGE_INTEGER counter, frequency;
 
-  QueryPerformanceFrequency(&frequency);
-  QueryPerformanceCounter(&counter);
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&counter);
 
-  return counter.QuadPart / (frequency.QuadPart / 1000);
+	return counter.QuadPart / (frequency.QuadPart / 1000);
 }
 
 #endif
@@ -206,6 +206,8 @@ static int sendAndReceive(void *dataToSend, void *recvBuffer, unsigned int len);
 static int sendAndReceiveLowSpeed(void *dataToSend, void *recvBuffer, unsigned int len);
 static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned int len);
 static int spi_reset_tr(void);
+static int spi_iqrf_open(void);
+static int spi_iqrf_close(void);
 
 /**
  * Initializes nullTransfer structure for low speed communication.
@@ -253,14 +255,12 @@ static int setMode()
   uint8_t rdMode = -1;
 
   setResult = ioctl(fd, SPI_IOC_WR_MODE, &SPI_MODE);
-  if (setResult < 0)
-  {
+  if (setResult < 0) {
     return setResult;
   }
 
   setResult = ioctl(fd, SPI_IOC_RD_MODE, &rdMode);
-  if (setResult < 0)
-  {
+  if (setResult < 0) {
     return setResult;
   }
 
@@ -279,14 +279,12 @@ static int setBitsPerWord()
   uint8_t rdBits = -1;
 
   setResult = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &BITS_PER_WORD);
-  if (setResult < 0)
-  {
+  if (setResult < 0) {
     return setResult;
   }
 
   setResult = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &rdBits);
-  if (setResult < 0)
-  {
+  if (setResult < 0) {
     return setResult;
   }
 
@@ -305,14 +303,12 @@ static int setMaxSpeed()
   uint8_t rdSpeed = -1;
 
   setResult = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &SPI_MAX_SPEED);
-  if (setResult < 0)
-  {
+  if (setResult < 0) {
     return setResult;
   }
 
   setResult = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &rdSpeed);
-  if (setResult < 0)
-  {
+  if (setResult < 0) {
     return setResult;
   }
 
@@ -470,27 +466,23 @@ static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned 
 
   // first byte
   result = ioctl(fd, SPI_IOC_MESSAGE(2), &completeTransfer);
-  if (result < 0)
-  {
+  if (result < 0) {
     goto end;
   }
 
   ++trans_id;
 
-  for (; trans_id < len; trans_id++)
-  {
+  for (; trans_id < len; trans_id++) {
     completeTransfer[1].tx_buf = (unsigned long)&(tx[trans_id]);
     completeTransfer[1].rx_buf = (unsigned long)&(rx[trans_id]);
 
-    if (trans_id == (len - 1))
-    {
+    if (trans_id == (len - 1)) {
       completeTransfer[1].delay_usecs = DELAY_AFTER_CS_HS_US;
       completeTransfer[1].cs_change = CS_DESELECT_DEVICE;
     }
 
     result = ioctl(fd, SPI_IOC_MESSAGE(1), &completeTransfer[1]);
-    if (result < 0)
-    {
+    if (result < 0) {
       goto end;
     }
   }
@@ -514,8 +506,7 @@ end:
  */
 static int isSPIDataReady(uint8_t spiStatus)
 {
-  if ((spiStatus >= 0x40) && (spiStatus < SPI_IQRF_SPI_READY_COMM))
-  {
+  if ((spiStatus >= 0x40) && (spiStatus < SPI_IQRF_SPI_READY_COMM)) {
     return 1;
   }
   return 0;
@@ -532,8 +523,7 @@ static int isSPIDataReady(uint8_t spiStatus)
 static void setPTYPE(uint8_t *pType, spi_iqrf_SPICtype ctype, unsigned int dataLen)
 {
   *pType = dataLen;
-  if (ctype == CTYPE_BUFFER_CHANGED)
-  {
+  if (ctype == CTYPE_BUFFER_CHANGED) {
     *pType |= 128;
   }
 }
@@ -550,8 +540,7 @@ static void bufferXor(uint8_t *crcm, uint8_t *buffer, unsigned int buffSize)
 {
   uint8_t dataId = 0;
 
-  for (dataId = 0; dataId < buffSize; dataId++)
-  {
+  for (dataId = 0; dataId < buffSize; dataId++) {
     *crcm ^= buffer[dataId];
   }
 }
@@ -565,14 +554,13 @@ static void bufferXor(uint8_t *crcm, uint8_t *buffer, unsigned int buffSize)
  *
  * @return CRCM
  */
-static uint8_t getCRCM(uint8_t ptype, uint8_t *data, unsigned int dataLen)
+static uint8_t getCRCM(uint8_t *data, unsigned int dataLen)
 {
-  uint8_t crcm = 0;
+  uint8_t crcm = 0x5F;
 
-  crcm ^= SPI_IQRF_SPI_CMD;
-  crcm ^= ptype;
-  bufferXor(&crcm, data, dataLen);
-  crcm ^= 0x5F;
+  crcm ^= data[0];
+  crcm ^= data[1];
+  bufferXor(&crcm, &data[2], dataLen);
 
   return crcm;
 }
@@ -614,8 +602,7 @@ static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen,
   uint8_t countedCrcs = 0;
 
   countedCrcs = getCRCS(ptype, recvData, dataLen);
-  if (crcsToVerify == countedCrcs)
-  {
+  if (crcsToVerify == countedCrcs) {
     return 1;
   }
   return 0;
@@ -630,20 +617,19 @@ static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen,
  */
 static int isSPINoDataReady(uint8_t spiStatus)
 {
-  switch (spiStatus)
-  {
-  case SPI_IQRF_SPI_DISABLED:
-  case SPI_IQRF_SPI_SUSPENDED:
-  case SPI_IQRF_SPI_BUFF_PROTECT:
-  case SPI_IQRF_SPI_CRCM_ERR:
-  case SPI_IQRF_SPI_READY_COMM:
-  case SPI_IQRF_SPI_READY_PROG:
-  case SPI_IQRF_SPI_READY_DEBUG:
-  case SPI_IQRF_SPI_SLOW_MODE:
-  case SPI_IQRF_SPI_HW_ERROR:
-    return 1;
-  default:
-    return 0;
+  switch (spiStatus) {
+    case SPI_IQRF_SPI_DISABLED:
+    case SPI_IQRF_SPI_SUSPENDED:
+    case SPI_IQRF_SPI_BUFF_PROTECT:
+    case SPI_IQRF_SPI_CRCM_ERR:
+    case SPI_IQRF_SPI_READY_COMM:
+    case SPI_IQRF_SPI_READY_PROG:
+    case SPI_IQRF_SPI_READY_DEBUG:
+    case SPI_IQRF_SPI_SLOW_MODE:
+    case SPI_IQRF_SPI_HW_ERROR:
+      return 1;
+    default:
+      return 0;
   }
 }
 
@@ -656,13 +642,11 @@ static int isSPINoDataReady(uint8_t spiStatus)
  */
 static int checkDataLen(unsigned int dataLen)
 {
-  if (dataLen <= 0)
-  {
+  if (dataLen <= 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  if (dataLen > SPI_IQRF_MAX_DATA_LENGTH)
-  {
+  if (dataLen > SPI_IQRF_MAX_DATA_LENGTH) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -686,11 +670,19 @@ int spi_iqrf_init(const char *dev)
     strcpy(spiIqrfDefaultConfig.spiDev, dev);
   }
 
+  // Copy SPI kernel module name
+  if (strlen(SPI_IQRF_SPI_KERNEL_MODULE) > SPI_KERNEL_MODULE_CAPACITY) {
+    return BASE_TYPES_OPER_ERROR;
+  } else {
+    strcpy(spiIqrfDefaultConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
+  }
+
   spiIqrfDefaultConfig.resetGpioPin = RESET_GPIO;
   spiIqrfDefaultConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
   spiIqrfDefaultConfig.spiMisoGpioPin = MISO_GPIO;
   spiIqrfDefaultConfig.spiMosiGpioPin = MOSI_GPIO;
   spiIqrfDefaultConfig.spiClkGpioPin = SCLK_GPIO;
+  spiIqrfDefaultConfig.spiPgmSwGpioPin = PGM_SW_GPIO;
 
   return spi_iqrf_initAdvanced(&spiIqrfDefaultConfig);
 }
@@ -716,72 +708,22 @@ int spi_iqrf_initDefault()
 */
 int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 {
-  int32_t ioResult = 0;
-  int32_t initResult = 0;
 
   if (libIsInitialized == 1) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  spiIqrfConfig = configStruct;
+  spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
-  while (1) {
-    // Reset TR module
-    // Disable PWR for TR
-    if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
-      return BASE_TYPES_OPER_ERROR;
-    }
+  // Reset TR module
+  spi_reset_tr();
 
-    // Sleep for 300ms
-    SLEEP(300);
+  // Sleep for 500ms (in this time TR module waits for sequence to switch to programming mode)
+  SLEEP(500);
 
-    // Enable PWR for TR
-    if (gpio_setValue(spiIqrfConfig->resetGpioPin, 1) < 0) {
-      return BASE_TYPES_OPER_ERROR;
-    }
-
-    // Sleep for 500ms (in this time TR module waits for sequence to switch to programming mode)
-    SLEEP(500);
-
-    if (fd != NO_FILE_DESCRIPTOR) {
-      break;
-      //return BASE_TYPES_OPER_ERROR;
-    }
-
-    fd = open(spiIqrfConfig->spiDev, O_RDWR);
-    if (fd < 0) {
-      fd = NO_FILE_DESCRIPTOR;
-      break;
-      //return BASE_TYPES_OPER_ERROR;
-    }
-
-    // set SPI mode
-    initResult = setMode();
-    if (initResult < 0) {
-      break;
-      //return BASE_TYPES_OPER_ERROR;
-    }
-
-    // set bits per word
-    initResult = setBitsPerWord();
-    if (initResult < 0) {
-      break;
-      //return BASE_TYPES_OPER_ERROR;
-    }
-
-    // set max. speed
-    initResult = setMaxSpeed();
-    if (initResult < 0) {
-      break;
-      //return BASE_TYPES_OPER_ERROR;
-    }
-
+  if (spi_iqrf_open() == BASE_TYPES_OPER_OK){
     libIsInitialized = 1;
     spi_iqrf_setCommunicationMode(SPI_IQRF_LOW_SPEED_MODE);
-    break;
-  }
-
-  if (libIsInitialized) {
     return BASE_TYPES_OPER_OK;
   }
   else {
@@ -789,6 +731,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     return BASE_TYPES_OPER_ERROR;
   }
 }
+
 
 /**
 * Gets current communication mode
@@ -916,25 +859,21 @@ int spi_iqrf_write(void *dataToWrite, unsigned int dataLen)
   uint8_t sendResult = 0;
   int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
 
-  if (libIsInitialized == 0)
-  {
+  if (libIsInitialized == 0) {
     return BASE_TYPES_LIB_NOT_INITIALIZED;
   }
 
-  if (fd < 0)
-  {
+  if (fd < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   // checking input parameters
-  if (dataToWrite == NULL)
-  {
+  if (dataToWrite == NULL) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   dataLenCheckRes = checkDataLen(dataLen);
-  if (dataLenCheckRes)
-  {
+  if (dataLenCheckRes) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -951,14 +890,13 @@ int spi_iqrf_write(void *dataToWrite, unsigned int dataLen)
   memcpy(dataToSend + 2, dataToWrite, dataLen);
 
   // set crcm
-  crcm = getCRCM(ptype, dataToWrite, dataLen);
+  crcm = getCRCM(dataToSend, dataLen);
   dataToSend[dataLen + 2] = crcm;
 
   // send data to module
   sendResult = sendData(dataToSend, dataLen + 3);
   free(dataToSend);
-  if (sendResult < 0)
-  {
+  if (sendResult < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1021,7 +959,7 @@ int spi_iqrf_read(void *readBuffer, unsigned int dataLen)
   memset(dummyData + 2, 0, dataLen);
 
   // set crcm
-  crcm = getCRCM(ptype, dummyData + 2, dataLen);
+  crcm = getCRCM(dummyData, dataLen);
   dummyData[dataLen + 2] = crcm;
 
   // send data to module
@@ -1067,34 +1005,29 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
   uint8_t sendResult = 0;
   int dataLenCheckRes = -1;
 
-  if (libIsInitialized == 0)
-  {
+  if (libIsInitialized == 0) {
     return BASE_TYPES_LIB_NOT_INITIALIZED;
   }
 
-  if (fd < 0)
-  {
+  if (fd < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   // checking input parameters
-  if (readBuffer == NULL)
-  {
+  if (readBuffer == NULL) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  dataLenCheckRes = checkDataLen(dataLen);
-  if (dataLenCheckRes || dataLen < 16)
-  {
+  if (checkDataLen(dataLen) != BASE_TYPES_OPER_OK || dataLen < 16) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  dummyData = malloc((dataLen + 3) * sizeof(uint8_t));
+  dummyData = malloc((dataLen + 4) * sizeof(uint8_t));
   if (dummyData == NULL) {
        return BASE_TYPES_OPER_ERROR;
   }
 
-  receiveBuffer = malloc((dataLen + 3) * sizeof(uint8_t));
+  receiveBuffer = malloc((dataLen + 4) * sizeof(uint8_t));
   if (receiveBuffer == NULL) {
        return BASE_TYPES_OPER_ERROR;
   }
@@ -1110,21 +1043,20 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
   memset(dummyData + 2, 0, dataLen);
 
   // set crcm
-  crcm = getCRCM(ptype, dummyData + 2, dataLen);
+  crcm = getCRCM(dummyData, dataLen);
   dummyData[dataLen + 2] = crcm;
+  dummyData[dataLen + 3] = 0;
 
   // send data to module
-  sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 3);
+  sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 4);
   free(dummyData);
-  if (sendResult < 0)
-  {
+  if (sendResult < 0) {
     free(receiveBuffer);
     return BASE_TYPES_OPER_ERROR;
   }
 
   // verify CRCS
-  if (!verifyCRCS(ptype, receiveBuffer + 2, dataLen, receiveBuffer[dataLen + 2]))
-  {
+  if (!verifyCRCS(ptype, receiveBuffer + 2, dataLen, receiveBuffer[dataLen + 2])) {
     free(receiveBuffer);
     return SPI_IQRF_ERROR_CRCS;
   }
@@ -1289,7 +1221,7 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
   dataToSend[1] = ptype;
 
   // set crcm
-  crcm = getCRCM(ptype, (uint8_t *)dataToWrite, dataLen);
+  crcm = getCRCM(dataToSend, dataLen);
   dataToSend[dataLen + 2] = crcm;
 
   // send data to module
@@ -1442,7 +1374,7 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
   dataToSend[1] = ptype;
 
   // set crcm
-  crcm = getCRCM(ptype, (uint8_t *)dataToWrite, writeLen);
+  crcm = getCRCM(dataToSend, writeLen);
   dataToSend[writeLen + 2] = crcm;
 
   // send data to module
@@ -1480,36 +1412,17 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
 }
 
 /**
-* Reset TR. This internal function has many side effects. Ports are controled by GPIO, all are output ports, ...
+* Reset TR. This internal function makes reset of TR module and switch power supply ON
 *
 *
 * @return	@c BASE_TYPES_OPER_ERROR = error occures during TR reset
-* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c BASE_TYPES_OPER_OK = TR reset successfull
 */
 static int spi_reset_tr()
 {
-  // Set all SPI pins to low
-  if (gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0) < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
-  if (gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_OUT, 0) < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
-  if (gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_OUT, 0) < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
-  if (gpio_setup(spiIqrfConfig->spiClkGpioPin, GPIO_DIRECTION_OUT, 0) < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
 
   // Disable PWR for TR
-  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 0) < 0)
-  {
+  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1517,202 +1430,63 @@ static int spi_reset_tr()
   SLEEP(300);
 
   // Enable PWR for TR
-  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 1) < 0)
-  {
+  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 1) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  // Set SPI pins to idle
-  if (gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1) < 0)
-  {
+  SLEEP(1);
+
+  return BASE_TYPES_OPER_OK;
+}
+
+/**
+* Open and setup SPI channel.
+*
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during SPI initialization
+* @return	@c BASE_TYPES_OPER_OK = SPI channel initialized OK
+*/
+int spi_iqrf_open(void)
+{
+  if (fd != NO_FILE_DESCRIPTOR) {
+    return BASE_TYPES_OPER_ERROR;
+  }
+
+  fd = open(spiIqrfConfig->spiDev, O_RDWR);
+  if (fd < 0) {
+    fd = NO_FILE_DESCRIPTOR;
+    return BASE_TYPES_OPER_ERROR;
+  }
+
+  // set SPI mode
+  if (setMode() < 0) {
+    return BASE_TYPES_OPER_ERROR;
+  }
+
+  // set bits per word
+  if (setBitsPerWord() < 0) {
+    return BASE_TYPES_OPER_ERROR;
+  }
+
+  // set max. speed
+  if (setMaxSpeed() < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   return BASE_TYPES_OPER_OK;
 }
 
-
 /**
-* Enter programming mode
+* Close SPI channel.
 *
 *
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode entry
-* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
-* @return	@c BASE_TYPES_OPER_OK = Programming mode entry successfull
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = spi library was not initialized
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during SPI channel closing
+* @return	@c BASE_TYPES_OPER_OK = SPI channel closed OK
 */
-int spi_iqrf_pe(void)
+int spi_iqrf_close(void)
 {
-    uint64_t start;
-    spi_iqrf_SPIStatus status;
-
-    if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK)
-    {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
-        return BASE_TYPES_OPER_OK;
-    }
-
-    if (spi_reset_tr() != BASE_TYPES_OPER_OK)
-    {
-        goto pe_error;
-    }
-
-    if (gpio_setDirection(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_OUT) < 0)
-    {
-        goto pe_error;
-    }
-
-    if (gpio_setDirection(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN) < 0)
-    {
-        goto pe_error;
-    }
-
-    start = get_ms_ts();
-    while (start - get_ms_ts() < 410) {
-        if (gpio_setValue(spiIqrfConfig->spiMisoGpioPin, gpio_getValue(spiIqrfConfig->spiMosiGpioPin)) < 0)
-        {
-            goto pe_error;
-        }
-    }
-
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiCe0GpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiMisoGpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiMisoGpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiClkGpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-
-    // Init SPI
-    if (spi_iqrf_initAdvanced(spiIqrfConfig) != BASE_TYPES_OPER_OK)
-    {
-        return BASE_TYPES_OPER_ERROR;
-    }
-
-    status.dataNotReadyStatus = SPI_IQRF_SPI_DISABLED;
-    status.isDataReady = 0;
-    start = get_ms_ts();
-    while (start - get_ms_ts() < 1000) {
-        if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK)
-        {
-            return BASE_TYPES_OPER_ERROR;
-        }
-
-        if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
-            break;
-        }
-    }
-    if (status.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    return BASE_TYPES_OPER_OK;
-
-pe_error:
-    iqrf_switch_pin_driver(spiIqrfConfig->spiCe0GpioPin , PIN_SPI);
-    iqrf_switch_pin_driver(spiIqrfConfig->spiMisoGpioPin , PIN_SPI);
-    iqrf_switch_pin_driver(spiIqrfConfig->spiMosiGpioPin , PIN_SPI);
-    iqrf_switch_pin_driver(spiIqrfConfig->spiClkGpioPin , PIN_SPI);
-    return BASE_TYPES_OPER_ERROR;
-}
-
-/**
-* Terminate programming mode
-*
-*
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode termination
-* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
-* @return	@c BASE_TYPES_OPER_OK = Programming mode termination successfull
-*/
-
-int spi_iqrf_pt(void)
-{
-    uint64_t start;
-    spi_iqrf_SPIStatus status;
-
-    if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK)
-    {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_COMM) {
-        return BASE_TYPES_OPER_OK;
-    }
-
-    status.dataNotReadyStatus = SPI_IQRF_SPI_DISABLED;
-    status.isDataReady = 0;
-    start = get_ms_ts();
-    while (start - get_ms_ts() < 1000) {
-        if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK)
-        {
-            return BASE_TYPES_OPER_ERROR;
-        }
-
-        if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
-            break;
-        }
-    }
-    if (status.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-
-    if (spi_reset_tr() != BASE_TYPES_OPER_OK)
-    {
-        iqrf_switch_pin_driver(spiIqrfConfig->spiCe0GpioPin , PIN_SPI);
-        iqrf_switch_pin_driver(spiIqrfConfig->spiMisoGpioPin , PIN_SPI);
-        iqrf_switch_pin_driver(spiIqrfConfig->spiMosiGpioPin , PIN_SPI);
-        iqrf_switch_pin_driver(spiIqrfConfig->spiClkGpioPin , PIN_SPI);
-        return BASE_TYPES_OPER_ERROR;
-    }
-
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiCe0GpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiMisoGpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiMosiGpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-    if (iqrf_switch_pin_driver(spiIqrfConfig->spiClkGpioPin , PIN_SPI) != 0) {
-        return BASE_TYPES_OPER_ERROR;
-    }
-
-    // Init SPI
-    if (spi_iqrf_initAdvanced(spiIqrfConfig) != BASE_TYPES_OPER_OK)
-    {
-        return BASE_TYPES_OPER_ERROR;
-    }
-}
-
-
-/**
-* Destroys IQRF SPI library object and releases SPI port
-*
-*
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during SPI destroy operation
-* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
-* @return	@c BASE_TYPES_OPER_OK = SPI was successfully destroyed
-*/
-int spi_iqrf_destroy(void)
-{
-  int ioDestroyRes = -1;
-  int closeRes = -1;
-
-  if (libIsInitialized == 0) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
-
-  // after calling this method, the behavior of the library will be
-  // like if the library was not initialized
-  libIsInitialized = 0;
-
-  // destroy used rpi_io library
-  gpio_cleanup(spiIqrfConfig->resetGpioPin);
+  int closeRes;
 
   if (fd == NO_FILE_DESCRIPTOR) {
     return BASE_TYPES_LIB_NOT_INITIALIZED;
@@ -1730,4 +1504,157 @@ int spi_iqrf_destroy(void)
   }
 
   return BASE_TYPES_OPER_OK;
+}
+
+/**
+* Enter programming mode
+*
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode entry
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c BASE_TYPES_OPER_OK = Programming mode entry successfull
+*/
+int spi_iqrf_pe(void)
+{
+    uint8_t sysCommand[256];
+
+    uint64_t start;
+    spi_iqrf_SPIStatus status;
+
+    if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
+        return BASE_TYPES_OPER_OK;
+    }
+
+    if (spi_iqrf_close() != BASE_TYPES_OPER_OK) {
+      return BASE_TYPES_OPER_ERROR;
+    }
+
+    strcpy(sysCommand, "modprobe -r ");
+    strcat(sysCommand, spiIqrfConfig->spiKernelModule);
+    system(sysCommand);
+
+    if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_IN, 0);
+    gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN, 0);
+
+    gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0);
+    gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
+
+    // Sleep for 500ms
+    SLEEP(500);
+
+    gpio_setDirection(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN);
+    gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1);
+
+    // Sleep for 100ms
+    SLEEP(100);
+
+    gpio_cleanup(spiIqrfConfig->spiCe0GpioPin);
+    gpio_cleanup(spiIqrfConfig->spiMisoGpioPin);
+    gpio_cleanup(spiIqrfConfig->spiMosiGpioPin);
+
+    // Init SPI
+    strcpy(sysCommand, "modprobe ");
+    strcat(sysCommand, spiIqrfConfig->spiKernelModule);
+    system(sysCommand);
+
+    if (spi_iqrf_open() != BASE_TYPES_OPER_OK) {
+      return BASE_TYPES_OPER_ERROR;
+    }
+
+    status.dataNotReadyStatus = SPI_IQRF_SPI_DISABLED;
+    status.isDataReady = 0;
+    start = get_ms_ts();
+    while (get_ms_ts() - start < 1000) {
+        if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK) {
+            return BASE_TYPES_OPER_ERROR;
+        }
+
+        if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
+            break;
+        }
+    }
+    if (status.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    return BASE_TYPES_OPER_OK;
+}
+
+/**
+* Terminate programming mode
+*
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode termination
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c BASE_TYPES_OPER_OK = Programming mode termination successfull
+*/
+
+int spi_iqrf_pt(void)
+{
+    uint64_t start;
+    spi_iqrf_SPIStatus status;
+
+    if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_COMM) {
+        return BASE_TYPES_OPER_OK;
+    }
+
+    status.dataNotReadyStatus = SPI_IQRF_SPI_DISABLED;
+    status.isDataReady = 0;
+    start = get_ms_ts();
+    while (get_ms_ts() - start < 1000) {
+        if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK) {
+            return BASE_TYPES_OPER_ERROR;
+        }
+
+        if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
+            break;
+        }
+    }
+    if (status.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    return BASE_TYPES_OPER_OK;
+}
+
+
+/**
+* Destroys IQRF SPI library object and releases SPI port
+*
+*
+* @return	@c BASE_TYPES_OPER_ERROR = error occures during SPI destroy operation
+* @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
+* @return	@c BASE_TYPES_OPER_OK = SPI was successfully destroyed
+*/
+int spi_iqrf_destroy(void)
+{
+
+  if (libIsInitialized == 0) {
+    return BASE_TYPES_LIB_NOT_INITIALIZED;
+  }
+
+  // after calling this method, the behavior of the library will be
+  // like if the library was not initialized
+  libIsInitialized = 0;
+
+  // destroy used rpi_io library
+  gpio_cleanup(spiIqrfConfig->resetGpioPin);
+
+  return spi_iqrf_close();
 }

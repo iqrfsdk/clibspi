@@ -20,8 +20,8 @@
  * between Linux system and TR modules using SPI and IO. IO functionality is build
  * up on 'gpio' static library.
  *
- * @file		  spi_iqrf.h
- * @date		  21.2.2018
+ * @file		spi_iqrf.h
+ * @date		11.3.2018
  */
 
 #ifndef __SPI_IQRF_H
@@ -44,7 +44,11 @@ extern "C" {
 
 /** SPI device name size */
 // Constant is used to specify array. Therefore, they can not be defined as static const uint8_t.
-#define SPI_DEV_CAPACITY 255
+#define SPI_DEV_CAPACITY 128
+
+/** SPI kernel module name size */
+// Constant is used to specify array. Therefore, they can not be defined as static const uint8_t.
+#define SPI_KERNEL_MODULE_CAPACITY 128
 
 /** IQRF SPI Error constants. */
 typedef enum spi_iqrf_Errors {
@@ -128,17 +132,20 @@ typedef struct spi_iqrf_config_struct
 {
   /** Device file name*/
   char spiDev[SPI_DEV_CAPACITY+1];
+  char spiKernelModule[SPI_KERNEL_MODULE_CAPACITY+1];
   uint8_t resetGpioPin;
   uint8_t spiCe0GpioPin;
   uint8_t spiMisoGpioPin;
   uint8_t spiMosiGpioPin;
   uint8_t spiClkGpioPin;
+  uint8_t spiPgmSwGpioPin;
 } spi_iqrf_config_struct;
 
 /** Default SPI device. */
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
 	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
 #endif //SPI_IQRF_DEFAULT_SPI_DEVICE
+
 
 /**
  * Initializes SPI device to use.

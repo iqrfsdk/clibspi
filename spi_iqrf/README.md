@@ -20,6 +20,11 @@ spi_iqrf_getSPIStatus 		Gets SPI status
 spi_iqrf_write			Writes data to SPI
 spi_iqrf_read 			Reads data from SPI
 spi_iqrf_destroy 		Destroys IQRF SPI library object and releases SPI port
+
+spi_iqrf_pe			Switch TR module to programming mode
+spi_iqrf_pt			Terminate programming mode
+spi_iqrf_get_tr_module_info	Read identification data of TR module
+
 ```
 
 See [wiki](https://github.com/MICRORISC/iqrfsdk/wiki) for more information.
