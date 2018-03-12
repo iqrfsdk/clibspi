@@ -184,8 +184,8 @@ int openCommunication(void)
     int operResult;
 
     strcpy (mySpiIqrfConfig.spiDev, "/dev/spidev0.0");
-    mySpiIqrfConfig.resetGpioPin = RESET_GPIO;
-    mySpiIqrfConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
+    mySpiIqrfConfig.enableGpioPin = ENABLE_GPIO;
+    mySpiIqrfConfig.spiCe0GpioPin = CE0_GPIO;
     mySpiIqrfConfig.spiMisoGpioPin = MISO_GPIO;
     mySpiIqrfConfig.spiMosiGpioPin = MOSI_GPIO;
     mySpiIqrfConfig.spiClkGpioPin = SCLK_GPIO;

@@ -38,10 +38,10 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver);
 #define LED_GPIO (22)
 /** Button GPIO. */
 #define BUTTON_GPIO (7)
-/** Reset GPIO. */
-#define RESET_GPIO (23)
+/** Enable GPIO. */
+#define ENABLE_GPIO (23)
 /** SPI CE GPIO. */
-#define RPIIO_PIN_CE0 (8)
+#define CE0_GPIO (8)
 /** SPI MISO GPIO */
 #define MISO_GPIO (9)
 /** SPI MOSI GPIO */
@@ -66,9 +66,9 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
 /** Button GPIO. */
 #define BUTTON_GPIO (10)
 /** Reset GPIO. */
-#define RESET_GPIO (19)
+#define ENABLE_GPIO (19)
 /** SPI CE GPIO. */
-#define RPIIO_PIN_CE0 (13)
+#define CE0_GPIO (13)
 /** SPI MISO GPIO */
 #define MISO_GPIO (16)
 /** SPI MOSI GPIO */
@@ -93,9 +93,9 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
 /** Button GPIO - NOT USED. */
 #define BUTTON_GPIO (0)
 /** Reset GPIO. */
-#define RESET_GPIO (18)
+#define ENABLE_GPIO (18)
 /** SPI CE GPIO. */
-#define RPIIO_PIN_CE0 (8)
+#define CE0_GPIO (8)
 /** SPI MISO GPIO */
 #define MISO_GPIO (9)
 /** SPI MOSI GPIO */
