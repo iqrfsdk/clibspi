@@ -677,8 +677,8 @@ int spi_iqrf_init(const char *dev)
     strcpy(spiIqrfDefaultConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
   }
 
-  spiIqrfDefaultConfig.resetGpioPin = RESET_GPIO;
-  spiIqrfDefaultConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
+  spiIqrfDefaultConfig.enableGpioPin = ENABLE_GPIO;
+  spiIqrfDefaultConfig.spiCe0GpioPin = CE0_GPIO;
   spiIqrfDefaultConfig.spiMisoGpioPin = MISO_GPIO;
   spiIqrfDefaultConfig.spiMosiGpioPin = MOSI_GPIO;
   spiIqrfDefaultConfig.spiClkGpioPin = SCLK_GPIO;
@@ -727,7 +727,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     return BASE_TYPES_OPER_OK;
   }
   else {
-    gpio_cleanup(spiIqrfConfig->resetGpioPin);
+    gpio_cleanup(spiIqrfConfig->enableGpioPin);
     return BASE_TYPES_OPER_ERROR;
   }
 }
@@ -1422,7 +1422,7 @@ static int spi_reset_tr()
 {
 
   // Disable PWR for TR
-  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
+  if (gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1430,7 +1430,7 @@ static int spi_reset_tr()
   SLEEP(300);
 
   // Enable PWR for TR
-  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 1) < 0) {
+  if (gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1654,7 +1654,7 @@ int spi_iqrf_destroy(void)
   libIsInitialized = 0;
 
   // destroy used rpi_io library
-  gpio_cleanup(spiIqrfConfig->resetGpioPin);
+  gpio_cleanup(spiIqrfConfig->enableGpioPin);
 
   return spi_iqrf_close();
 }

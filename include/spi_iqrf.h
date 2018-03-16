@@ -133,7 +133,7 @@ typedef struct spi_iqrf_config_struct
   /** Device file name*/
   char spiDev[SPI_DEV_CAPACITY+1];
   char spiKernelModule[SPI_KERNEL_MODULE_CAPACITY+1];
-  uint8_t resetGpioPin;
+  uint8_t enableGpioPin;
   uint8_t spiCe0GpioPin;
   uint8_t spiMisoGpioPin;
   uint8_t spiMosiGpioPin;

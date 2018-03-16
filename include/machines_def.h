@@ -26,10 +26,10 @@
 #define LED_GPIO (22)
 /** PGM Switch GPIO. */
 #define PGM_SW_GPIO (7)
-/** Reset GPIO. */
-#define RESET_GPIO (23)
+/** Enable GPIO. */
+#define ENABLE_GPIO (23)
 /** SPI CE GPIO. */
-#define RPIIO_PIN_CE0 (8)
+#define CE0_GPIO (8)
 /** SPI MISO GPIO */
 #define MISO_GPIO (9)
 /** SPI MOSI GPIO */
@@ -53,10 +53,10 @@
 #define LED_GPIO (3)
 /** PGM Switch GPIO. */
 #define PGM_SW_GPIO (10)
-/** Reset GPIO. */
-#define RESET_GPIO (19)
+/** Enable GPIO. */
+#define ENABLE_GPIO (19)
 /** SPI CE GPIO. */
-#define RPIIO_PIN_CE0 (13)
+#define CE0_GPIO (13)
 /** SPI MISO GPIO */
 #define MISO_GPIO (16)
 /** SPI MOSI GPIO */
@@ -80,10 +80,10 @@
 #define LED_GPIO (0)
 /** PGM Switch GPIO. */
 #define PGM_SW_GPIO (0)
-/** Reset GPIO. */
-#define RESET_GPIO (18)
+/** Enable GPIO. */
+#define ENABLE_GPIO (18)
 /** SPI CE GPIO. */
-#define RPIIO_PIN_CE0 (8)
+#define CE0_GPIO (8)
 /** SPI MISO GPIO */
 #define MISO_GPIO (9)
 /** SPI MOSI GPIO */

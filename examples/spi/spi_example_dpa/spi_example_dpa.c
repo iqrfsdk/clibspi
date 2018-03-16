@@ -186,8 +186,8 @@ int openCommunication(void)
 
     strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
     strcpy (mySpiIqrfConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
-    mySpiIqrfConfig.resetGpioPin = RESET_GPIO;
-    mySpiIqrfConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
+    mySpiIqrfConfig.enableGpioPin = ENABLE_GPIO;
+    mySpiIqrfConfig.spiCe0GpioPin = CE0_GPIO;
     mySpiIqrfConfig.spiMisoGpioPin = MISO_GPIO;
     mySpiIqrfConfig.spiMosiGpioPin = MOSI_GPIO;
     mySpiIqrfConfig.spiClkGpioPin = SCLK_GPIO;
