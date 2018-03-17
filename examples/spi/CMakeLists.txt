@@ -1,3 +1,4 @@
 add_subdirectory(spi_example_dpa)
 add_subdirectory(spi_example_idf)
+add_subdirectory(spi_example_pgm_iqrf)
 

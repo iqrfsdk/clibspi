@@ -22,7 +22,8 @@ Library contais following folders
 │   │   
 │   └── spi
 │       ├── spi_example_dpa       Example of DPA communication via SPI
-│       └── spi_example_idf	  Example of TR module identification reading via SPI
+│       ├── spi_example_idf	  Example of TR module identification reading via SPI
+│       └── spi_example_pgm_iqrf  Example of TR module programming with *.iqrf file 
 │
 ├── include                       Folder contains header files for SPI-IQRF src
 ├── spi_iqrf                      Main part of the IQRF SPI lib source codes
