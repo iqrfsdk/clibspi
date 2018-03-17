@@ -146,6 +146,18 @@ typedef struct spi_iqrf_config_struct
 	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
 #endif //SPI_IQRF_DEFAULT_SPI_DEVICE
 
+/** Programming targets */
+// Constants are used in case. Therefore, they can not be defined as static const uint8_t.
+#define CFG_TARGET              0x00
+#define RFPMG_TARGET            0x01
+#define RFBAND_TARGET           0x02
+#define ACCESS_PWD_TARGET       0x03
+#define USER_KEY_TARGET         0x04
+#define FLASH_TARGET            0x05
+#define INTERNAL_EEPROM_TARGET  0x06
+#define EXTERNAL_EEPROM_TARGET  0x07
+#define SPECIAL_TARGET          0x08
+
 
 /**
  * Initializes SPI device to use.

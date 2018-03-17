@@ -32,13 +32,6 @@
 /* Private constants                */
 /************************************/
 
-//#define NANO_SECOND_MULTIPLIER  1000000  // 1 millisecond = 1,000,000 nanoseconds
-//const unsigned long INTERVAL_MS = 10 * NANO_SECOND_MULTIPLIER;
-const unsigned long INTERVAL_MS = 10;
-
-/** Time interval between DPA messagess controls LEDs. */
-const unsigned long TIME_BETWEEN_LEDS_MS = 2000;
-
 /************************************/
 /* Private functions predeclaration */
 /************************************/
