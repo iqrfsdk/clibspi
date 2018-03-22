@@ -1,22 +1,10 @@
-set(SPIDEV_SRC_FILES
-	spi_iqrf.c
+project(spi_iqrf)
+
+set(_SRC_FILES
+  spi_iqrf.c
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+add_library(${PROJECT_NAME} STATIC ${_SRC_FILES})
 
-set(SPIDEV_H_FILES
-	${CMAKE_SOURCE_DIR}/include/spi_iqrf.h
-)
+target_link_libraries(${PROJECT_NAME} sysfs_gpio)
 
-# Group the files in IDE.
-source_group("include" FILES ${SPIDEV_H_FILES})
-
-add_library(spi_iqrf
-        STATIC
-		${SPIDEV_SRC_FILES}
-		${SPIDEV_H_FILES}
-)
-
-target_link_libraries(spi_iqrf sysfs_gpio)
-
-#install(TARGETS spi_iqrf DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
