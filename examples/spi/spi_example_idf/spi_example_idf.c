@@ -32,13 +32,6 @@
 /* Private constants                */
 /************************************/
 
-//#define NANO_SECOND_MULTIPLIER  1000000  // 1 millisecond = 1,000,000 nanoseconds
-//const unsigned long INTERVAL_MS = 10 * NANO_SECOND_MULTIPLIER;
-const unsigned long INTERVAL_MS = 10;
-
-/** Time interval between DPA messagess controls LEDs. */
-const unsigned long TIME_BETWEEN_LEDS_MS = 2000;
-
 /************************************/
 /* Private functions predeclaration */
 /************************************/
@@ -64,8 +57,8 @@ int main(void)
 
     strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
     strcpy (mySpiIqrfConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
-    mySpiIqrfConfig.resetGpioPin = RESET_GPIO;
-    mySpiIqrfConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
+    mySpiIqrfConfig.enableGpioPin = ENABLE_GPIO;
+    mySpiIqrfConfig.spiCe0GpioPin = CE0_GPIO;
     mySpiIqrfConfig.spiMisoGpioPin = MISO_GPIO;
     mySpiIqrfConfig.spiMosiGpioPin = MOSI_GPIO;
     mySpiIqrfConfig.spiClkGpioPin = SCLK_GPIO;

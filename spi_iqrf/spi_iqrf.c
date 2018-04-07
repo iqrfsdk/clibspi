@@ -158,18 +158,6 @@ static const uint8_t SPI_IQRF_SPI_CMD_READ_FROM_EEEPROM = 0xF6;
 static const uint8_t SPI_IQRF_SPI_CMD_VERIFY_DATA_IN_FLASH = 0xFC;
 static const uint8_t SPI_IQRF_SPI_CMD_UPLOAD_IQRF = 0xF9;
 
-/** Programming targets */
-// Constants are used in case. Therefore, they can not be defined as static const uint8_t.
-#define CFG_TARGET              0x00
-#define RFPMG_TARGET            0x01
-#define RFBAND_TARGET           0x02
-#define ACCESS_PWD_TARGET       0x03
-#define USER_KEY_TARGET         0x04
-#define FLASH_TARGET            0x05
-#define INTERNAL_EEPROM_TARGET  0x06
-#define EXTERNAL_EEPROM_TARGET  0x07
-#define SPECIAL_TARGET          0x08
-
 /** Defines how to work with IQRF communication buffer. */
 typedef enum _spi_iqrf_SPICtype
 {
@@ -569,18 +557,16 @@ static uint8_t getCRCM(uint8_t *data, unsigned int dataLen)
  * Calculates and returns CRCS.
  *
  * @param	ptype		PTYPE of message
- * @param	data		buffer with input data for CRC calculation
+ * @param	data		buffer with input data received from TR module for CRC calculation
  * @param	dataLen		length (in bytes) of the data
  *
  * @return CRCS
  */
 static uint8_t getCRCS(uint8_t ptype, uint8_t *data, unsigned int dataLen)
 {
-  uint8_t crcs = 0;
+  uint8_t crcs = 0x5F ^ ptype;
 
-  crcs ^= ptype;
-  bufferXor(&crcs, data, dataLen);
-  crcs ^= 0x5F;
+  bufferXor(&crcs, &data[2], dataLen);
 
   return crcs;
 }
@@ -595,11 +581,10 @@ static uint8_t getCRCS(uint8_t ptype, uint8_t *data, unsigned int dataLen)
  * @return 1 = CRCS OK
  * @return 0 = wrong CRCS
  */
-static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen,
-  uint8_t crcsToVerify
-  )
+static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen)
 {
   uint8_t countedCrcs = 0;
+  uint8_t crcsToVerify = recvData[dataLen + 2];
 
   countedCrcs = getCRCS(ptype, recvData, dataLen);
   if (crcsToVerify == countedCrcs) {
@@ -677,8 +662,8 @@ int spi_iqrf_init(const char *dev)
     strcpy(spiIqrfDefaultConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
   }
 
-  spiIqrfDefaultConfig.resetGpioPin = RESET_GPIO;
-  spiIqrfDefaultConfig.spiCe0GpioPin = RPIIO_PIN_CE0;
+  spiIqrfDefaultConfig.enableGpioPin = ENABLE_GPIO;
+  spiIqrfDefaultConfig.spiCe0GpioPin = CE0_GPIO;
   spiIqrfDefaultConfig.spiMisoGpioPin = MISO_GPIO;
   spiIqrfDefaultConfig.spiMosiGpioPin = MOSI_GPIO;
   spiIqrfDefaultConfig.spiClkGpioPin = SCLK_GPIO;
@@ -727,7 +712,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     return BASE_TYPES_OPER_OK;
   }
   else {
-    gpio_cleanup(spiIqrfConfig->resetGpioPin);
+    gpio_cleanup(spiIqrfConfig->enableGpioPin);
     return BASE_TYPES_OPER_ERROR;
   }
 }
@@ -972,7 +957,7 @@ int spi_iqrf_read(void *readBuffer, unsigned int dataLen)
   }
 
   // verify CRCS
-  if (!verifyCRCS(ptype, receiveBuffer + 2, dataLen, receiveBuffer[dataLen + 2]))
+  if (!verifyCRCS(ptype, receiveBuffer, dataLen))
   {
     free(receiveBuffer);
     return SPI_IQRF_ERROR_CRCS;
@@ -1056,7 +1041,7 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
   }
 
   // verify CRCS
-  if (!verifyCRCS(ptype, receiveBuffer + 2, dataLen, receiveBuffer[dataLen + 2])) {
+  if (!verifyCRCS(ptype, receiveBuffer, dataLen)) {
     free(receiveBuffer);
     return SPI_IQRF_ERROR_CRCS;
   }
@@ -1106,31 +1091,27 @@ static void get_eeeprom_blk_wr_addr(uint8_t *dst, const uint8_t *src)
 int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int dataLen)
 {
   uint8_t *dataToSend = NULL;
+  uint8_t *receivedData = NULL;
   uint8_t ptype = 0;
   uint8_t crcm = 0;
   uint8_t sendResult = 0;
   int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
-  int offset;
 
-  if (libIsInitialized == 0)
-  {
+  if (libIsInitialized == 0) {
     return BASE_TYPES_LIB_NOT_INITIALIZED;
   }
 
-  if (fd < 0)
-  {
+  if (fd < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   // checking input parameters
-  if (dataToWrite == NULL)
-  {
+  if (dataToWrite == NULL) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   dataLenCheckRes = checkDataLen(dataLen);
-  if (dataLenCheckRes)
-  {
+  if (dataLenCheckRes) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1140,15 +1121,20 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
       case RFBAND_TARGET:
       case ACCESS_PWD_TARGET:
       case USER_KEY_TARGET:
-          offset = 2;
+          dataLen += 2;
           break;
       default:
-          offset = 0;
           break;
   }
 
-  dataToSend = malloc((dataLen + offset + 3) * sizeof(uint8_t));
+  dataToSend = malloc((dataLen + 4) * sizeof(uint8_t));
   if (dataToSend == NULL) {
+       return BASE_TYPES_OPER_ERROR;
+  }
+
+  receivedData = malloc((dataLen + 4) * sizeof(uint8_t));
+  if (receivedData == NULL) {
+       free(dataToSend);
        return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1156,6 +1142,7 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
   switch (target) {
       case CFG_TARGET:
           // CFG_TARGET: is unsupported, configuration upload must be split into separate memory uploads.
+          free(receivedData);
           free(dataToSend);
           return BASE_TYPES_OPER_ERROR;
           break;
@@ -1211,6 +1198,7 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
           memcpy(dataToSend + 2, dataToWrite, dataLen);
           break;
       default:
+          free(receivedData);
           free(dataToSend);
           return BASE_TYPES_OPER_ERROR;
           break;
@@ -1223,18 +1211,17 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
   // set crcm
   crcm = getCRCM(dataToSend, dataLen);
   dataToSend[dataLen + 2] = crcm;
+  dataToSend[dataLen + 3] = 0;
 
   // send data to module
-  sendResult = sendData(dataToSend, dataLen + 3);
+  sendResult = sendAndReceive(dataToSend, receivedData, dataLen + 4);
+
+  if (receivedData[dataLen + 3] != SPI_IQRF_SPI_BUFF_PROTECT) sendResult = SPI_IQRF_ERROR_CRCS;
+  free(receivedData);
   free(dataToSend);
-  if (sendResult < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
 
-  return 0;
-
-
+  if (sendResult < 0) return sendResult;
+  return BASE_TYPES_OPER_OK;
 }
 
 static void get_eeeprom_blk_rd_addr(uint8_t *dst, const uint8_t *src)
@@ -1360,7 +1347,7 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
           memcpy(dataToSend + 2, dataToWrite, writeLen);
           break;
       case SPECIAL_TARGET:
-          // SPECIAL_TARGET: is unsupported, user key can not be downloaded.
+          // SPECIAL_TARGET: is unsupported, special target can not be downloaded.
           free(dataToSend);
           return BASE_TYPES_OPER_ERROR;
       default:
@@ -1422,7 +1409,7 @@ static int spi_reset_tr()
 {
 
   // Disable PWR for TR
-  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
+  if (gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1430,7 +1417,7 @@ static int spi_reset_tr()
   SLEEP(300);
 
   // Enable PWR for TR
-  if (gpio_setup(spiIqrfConfig->resetGpioPin, GPIO_DIRECTION_OUT, 1) < 0) {
+  if (gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1654,7 +1641,7 @@ int spi_iqrf_destroy(void)
   libIsInitialized = 0;
 
   // destroy used rpi_io library
-  gpio_cleanup(spiIqrfConfig->resetGpioPin);
+  gpio_cleanup(spiIqrfConfig->enableGpioPin);
 
   return spi_iqrf_close();
 }

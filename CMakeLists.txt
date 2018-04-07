@@ -35,6 +35,9 @@ message(STATUS "CMAKE_C_FLAGS_DEBUG:     ${CMAKE_C_FLAGS_DEBUG}")
 	# add_definitions(-D${MACHINE})
 # endif(MACHINE)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_subdirectory(include)
 add_subdirectory(spi_iqrf)
 
 if (JNI_FOUND)
@@ -43,7 +46,9 @@ else()
   message("Java not found => spi_javastub cannot be configured")
 endif()
 
-add_subdirectory(include)
+set(clibspi_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include PARENT_SCOPE)
+set(clibspi_FOUND TRUE PARENT_SCOPE)
+
 add_subdirectory(sysfs_gpio)
 add_subdirectory(examples)
 
