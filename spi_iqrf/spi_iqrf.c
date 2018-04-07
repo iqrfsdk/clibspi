@@ -1096,7 +1096,6 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
   uint8_t crcm = 0;
   uint8_t sendResult = 0;
   int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
-  int offset;
 
   if (libIsInitialized == 0) {
     return BASE_TYPES_LIB_NOT_INITIALIZED;
@@ -1122,19 +1121,18 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
       case RFBAND_TARGET:
       case ACCESS_PWD_TARGET:
       case USER_KEY_TARGET:
-          offset = 2;
+          dataLen += 2;
           break;
       default:
-          offset = 0;
           break;
   }
 
-  dataToSend = malloc((dataLen + offset + 4) * sizeof(uint8_t));
+  dataToSend = malloc((dataLen + 4) * sizeof(uint8_t));
   if (dataToSend == NULL) {
        return BASE_TYPES_OPER_ERROR;
   }
 
-  receivedData = malloc((dataLen + offset + 4) * sizeof(uint8_t));
+  receivedData = malloc((dataLen + 4) * sizeof(uint8_t));
   if (receivedData == NULL) {
        free(dataToSend);
        return BASE_TYPES_OPER_ERROR;

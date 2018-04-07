@@ -48,6 +48,10 @@ spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout);
 /************************************/
 const unsigned long INTERVAL_MS = 10;
 uint8_t IqrfPgmCodeLineBuffer[64];
+
+/** SPI IQRF status */
+spi_iqrf_SPIStatus spiStatus;
+
 /** SPI IQRF configuration structure */
 spi_iqrf_config_struct mySpiIqrfConfig;
 
@@ -94,16 +98,15 @@ int main ( int argc, char *argv[] ) {
         printf("Programming mode OK.\n\r");
 
         while ((OpResult = iqrfPgmReadIQRFFileLine()) == IQRF_PGM_FILE_DATA_READY) {
-          printf("Data to writa:\n\r");
-          printDataInHex(IqrfPgmCodeLineBuffer, 20);
-          printf("Data sent to device.\n\r");
-          spi_iqrf_SPIStatus spiStatus = tryToWaitForPgmReady(2000);
-
+          spiStatus = tryToWaitForPgmReady(2000);
           // if SPI not ready in 5000 ms, end
           if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
             printf("Waiting for ready state failed.\n\r");
           }
           else {
+            printf("Data to write:\n\r");
+            printDataInHex(IqrfPgmCodeLineBuffer, 20);
+            printf("Data sent to device.\n\r");
             // write data to TR module
             PgmRetCode = spi_iqrf_upload(SPECIAL_TARGET, IqrfPgmCodeLineBuffer, 20);
             if (PgmRetCode != BASE_TYPES_OPER_OK) {
@@ -115,6 +118,9 @@ int main ( int argc, char *argv[] ) {
 
           }
         }
+
+        spiStatus = tryToWaitForPgmReady(2000);
+
         // terminate programming mode
         printf("Terminating programming mode.\n\r");
         if (spi_iqrf_pt() == BASE_TYPES_OPER_OK) {
