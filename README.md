@@ -25,7 +25,8 @@ Library contais following folders
 │       ├── spi_example_idf	    Example of TR module identification reading via SPI
 │       ├── spi_example_pgm_iqrf    Example of TR module programming with *.iqrf file 
 │       ├── spi_example_pgm_hex     Example of TR module programming with *.hex file 
-│       └── spi_example_pgm_trcnfg  Example of TR module programming with *.trcnfg file 
+│       ├── spi_example_pgm_trcnfg  Example of TR module programming with *.trcnfg file 
+│       └── spi_example_readmem     Example of TR module memory reading 
 │
 ├── include                       Folder contains header files for SPI-IQRF src
 ├── spi_iqrf                      Main part of the IQRF SPI lib source codes
