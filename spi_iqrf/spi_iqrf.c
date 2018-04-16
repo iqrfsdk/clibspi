@@ -1086,7 +1086,7 @@ static void get_eeeprom_blk_wr_addr(uint8_t *dst, const uint8_t *src)
 * @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
-* @return	@c BASE_TYPES_OPER_OK = data were successfully read
+* @return	@c BASE_TYPES_OPER_OK = data were successfully written
 */
 int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int dataLen)
 {
@@ -1224,20 +1224,6 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
   return BASE_TYPES_OPER_OK;
 }
 
-static void get_eeeprom_blk_rd_addr(uint8_t *dst, const uint8_t *src)
-{
-    uint16_t val = 0;
-
-    val = src[1];
-    val << 8;
-    val += src[0];
-
-    val = (val / 0x20) + 0x0400;
-
-    dst[0] = val & 0x00ff;
-    dst[1] = val >> 8;
-}
-
 /**
 * Download configuration data from SPI. Low level API for cutils and clibtr.
 *
@@ -1267,93 +1253,89 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
   uint8_t ptype = 0;
   uint8_t crcm = 0;
   uint8_t sendResult = 0;
+  uint64_t start;
   int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
   spi_iqrf_SPIStatus status;
 
-  if (libIsInitialized == 0)
-  {
+  if (libIsInitialized == 0) {
     return BASE_TYPES_LIB_NOT_INITIALIZED;
   }
 
-  if (fd < 0)
-  {
+  if (fd < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   // checking input parameters
-  if (dataToWrite == NULL)
-  {
+  if (dataToWrite == NULL) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  if (target == CFG_TARGET || target == RFPMG_TARGET || target == RFPMG_TARGET) {
+  if (target == INTERNAL_EEPROM_TARGET || target == RFPMG_TARGET || target == RFPMG_TARGET) {
     writeLen = 2;
   }
 
   dataLenCheckRes = checkDataLen(writeLen);
-  if (dataLenCheckRes || readLen > 32)
-  {
+  if (dataLenCheckRes || readLen > 32) {
     return BASE_TYPES_OPER_ERROR;
   }
 
-  dataToSend = malloc((writeLen + 3) * sizeof(uint8_t));
+  dataToSend = malloc((writeLen + 4) * sizeof(uint8_t));
 
   if (dataToSend == NULL) {
-      return BASE_TYPES_OPER_ERROR;
+    return BASE_TYPES_OPER_ERROR;
   }
 
   // set command indication
   switch (target) {
-      case CFG_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_VERIFY_DATA_IN_FLASH;
-          dataToSend[2] = 0xC0;
-          dataToSend[3] = 0x37;
-          return BASE_TYPES_OPER_ERROR;
-          break;
-      case RFPMG_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
-          dataToSend[2] = 0xC0;
-          dataToSend[3] = 0x0;
-          break;
-      case RFBAND_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
-          dataToSend[2] = 0xC0;
-          dataToSend[3] = 0x0;
-          break;
-      case ACCESS_PWD_TARGET:
-          // ACCESS_PWD_TARGET: is unsupported, access password can not be downloaded.
-          free(dataToSend);
-          return BASE_TYPES_OPER_ERROR;
-          break;
-      case USER_KEY_TARGET:
-          // USER_KEY_TARGET: is unsupported, user key can not be downloaded.
-          free(dataToSend);
-          return BASE_TYPES_OPER_ERROR;
-          break;
-      case FLASH_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_VERIFY_DATA_IN_FLASH;
-          // copy data
-          memcpy(dataToSend + 2, dataToWrite, writeLen);
-          break;
-      case INTERNAL_EEPROM_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
-          // Only low 8b of address are used for addressing internal eeprom
-          dataToSend[2] = dataToWrite[0];
-          dataToSend[3] = 0;
-          break;
-      case EXTERNAL_EEPROM_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEEPROM;
-          // copy data
-          memcpy(dataToSend + 2, dataToWrite, writeLen);
-          break;
-      case SPECIAL_TARGET:
-          // SPECIAL_TARGET: is unsupported, special target can not be downloaded.
-          free(dataToSend);
-          return BASE_TYPES_OPER_ERROR;
-      default:
-          free(dataToSend);
-          return BASE_TYPES_OPER_ERROR;
-          break;
+    case CFG_TARGET:
+      // CFG_TARGET: is unsupported, configuration reading must be split into separate memory readings.
+      free(dataToSend);
+      return BASE_TYPES_OPER_ERROR;
+      break;
+    case RFPMG_TARGET:
+      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
+      dataToSend[2] = 0xC0;
+      dataToSend[3] = 0x0;
+      break;
+    case RFBAND_TARGET:
+      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
+      dataToSend[2] = 0xC0;
+      dataToSend[3] = 0x0;
+      break;
+    case ACCESS_PWD_TARGET:
+      // ACCESS_PWD_TARGET: is unsupported, access password can not be downloaded.
+      free(dataToSend);
+      return BASE_TYPES_OPER_ERROR;
+      break;
+    case USER_KEY_TARGET:
+      // USER_KEY_TARGET: is unsupported, user key can not be downloaded.
+      free(dataToSend);
+      return BASE_TYPES_OPER_ERROR;
+      break;
+    case FLASH_TARGET:
+      dataToSend[0] = SPI_IQRF_SPI_CMD_VERIFY_DATA_IN_FLASH;
+      // copy data
+      memcpy(dataToSend + 2, dataToWrite, writeLen);
+      break;
+    case INTERNAL_EEPROM_TARGET:
+      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
+      // Only low 8b of address are used for addressing internal eeprom
+      dataToSend[2] = dataToWrite[0];
+      dataToSend[3] = 0;
+      break;
+    case EXTERNAL_EEPROM_TARGET:
+      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEEPROM;
+      // copy data
+      memcpy(dataToSend + 2, dataToWrite, writeLen);
+      break;
+    case SPECIAL_TARGET:
+      // SPECIAL_TARGET: is unsupported, special target can not be downloaded.
+      free(dataToSend);
+      return BASE_TYPES_OPER_ERROR;
+    default:
+      free(dataToSend);
+      return BASE_TYPES_OPER_ERROR;
+      break;
   }
 
   // set PTYPE
@@ -1363,39 +1345,41 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
   // set crcm
   crcm = getCRCM(dataToSend, writeLen);
   dataToSend[writeLen + 2] = crcm;
+  dataToSend[writeLen + 3] = 0;
 
   // send data to module
-  sendResult = sendData(dataToSend, writeLen + 3);
+  sendResult = sendData(dataToSend, writeLen + 4);
   free(dataToSend);
-  if (sendResult < 0)
-  {
+  if (sendResult < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   status.dataReady = 0;
   status.isDataReady = 0;
-  while (!(status.isDataReady == 1) && (status.dataReady == 32)) {
+  start = get_ms_ts();
+  while (!(status.isDataReady == 1 && status.dataReady == 32)) {
     int retval = spi_iqrf_getSPIStatus(&status);
-    if (BASE_TYPES_OPER_OK != retval) {
+    if ((retval != BASE_TYPES_OPER_OK) || (get_ms_ts()-start > 1000)) {
       return BASE_TYPES_OPER_ERROR;
     }
   }
 
   if (spi_iqrf_read(tmpBuffer, 32) != BASE_TYPES_OPER_OK) {
-      return BASE_TYPES_OPER_ERROR;
+    return BASE_TYPES_OPER_ERROR;
   }
 
   switch (target) {
-      case RFPMG_TARGET:
-          readBuffer[0] = tmpBuffer[1];
-          break;
-      case RFBAND_TARGET:
-          readBuffer[0] = tmpBuffer[0];
-          break;
-      default:
-           memcpy(readBuffer, tmpBuffer, readLen);
+    case RFPMG_TARGET:
+      readBuffer[0] = tmpBuffer[1];
+      break;
+    case RFBAND_TARGET:
+      readBuffer[0] = tmpBuffer[0];
+      break;
+    default:
+      memcpy(readBuffer, tmpBuffer, readLen);
   }
-  return 0;
+
+  return BASE_TYPES_OPER_OK;
 }
 
 /**

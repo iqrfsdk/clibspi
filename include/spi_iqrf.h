@@ -280,7 +280,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int
 * @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
-* @return	@c BASE_TYPES_OPER_OK = data were successfully read
+* @return	@c BASE_TYPES_OPER_OK = data were successfully written
 */
 SPI_IQRF_DECLSPEC int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int dataLen);
 
