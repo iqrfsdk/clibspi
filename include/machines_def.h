@@ -18,7 +18,7 @@
 #ifndef __MACHINES_DEF_H
 #define __MACHINES_DEF_H
 
-#define RPI
+#define OPIZ
 
 #ifdef RPI
 
@@ -69,7 +69,11 @@
 #define IO2_GPIO (2)
 
 #ifndef SPI_IQRF_SPI_KERNEL_MODULE
-	#define SPI_IQRF_SPI_KERNEL_MODULE "!!! must be defined !!!"
+	#define SPI_IQRF_SPI_KERNEL_MODULE "spidev"
+#endif
+
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+  #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
 #endif
 
 #endif /* OPI */
@@ -96,7 +100,7 @@
 #define IO2_GPIO (4)
 
 #ifndef SPI_IQRF_SPI_KERNEL_MODULE
-	#define SPI_IQRF_SPI_KERNEL_MODULE "!!! must be defined !!!"
+  #define SPI_IQRF_SPI_KERNEL_MODULE "spi_bcm2835"
 #endif
 
 #endif /* UNIPI */

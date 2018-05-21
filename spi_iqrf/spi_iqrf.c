@@ -1493,51 +1493,59 @@ int spi_iqrf_pe(void)
     spi_iqrf_SPIStatus status;
 
     if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK) {
-        return BASE_TYPES_OPER_ERROR;
+        //printf("SPI status error.\n\r");
+	      return BASE_TYPES_OPER_ERROR;
     }
 
     if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
-        return BASE_TYPES_OPER_OK;
+        //printf("Already in PE mode.\n\r");
+	      return BASE_TYPES_OPER_OK;
     }
 
     if (spi_iqrf_close() != BASE_TYPES_OPER_OK) {
-      return BASE_TYPES_OPER_ERROR;
+        //printf("Closing error.\n\r");
+	      //return BASE_TYPES_OPER_ERROR;
     }
 
     strcpy(sysCommand, "modprobe -r ");
     strcat(sysCommand, spiIqrfConfig->spiKernelModule);
     system(sysCommand);
+    //printf("Removing kernel SPI module.\n\r");
 
-    gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_IN, 0);
-    gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN, 0);
+    //gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_IN, 0);
+    //gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN, 0);
     gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 1);
+    //printf("Setting GPIO.\n\r");
 
     if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
-        return BASE_TYPES_OPER_ERROR;
+        //printf("Reset error.\n\r");
+	      return BASE_TYPES_OPER_ERROR;
     }
 
-    gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0);
+    //gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0);
 
     // Sleep for 500ms
     SLEEP(500);
 
     gpio_setDirection(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN);
-    gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1);
+    //gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1);
 
     // Sleep for 100ms
     SLEEP(100);
 
-    gpio_cleanup(spiIqrfConfig->spiCe0GpioPin);
-    gpio_cleanup(spiIqrfConfig->spiMisoGpioPin);
-    gpio_cleanup(spiIqrfConfig->spiMosiGpioPin);
+    //gpio_cleanup(spiIqrfConfig->spiCe0GpioPin);
+    //gpio_cleanup(spiIqrfConfig->spiMisoGpioPin);
+    //gpio_cleanup(spiIqrfConfig->spiMosiGpioPin);
 
     // Init SPI
     strcpy(sysCommand, "modprobe ");
     strcat(sysCommand, spiIqrfConfig->spiKernelModule);
     system(sysCommand);
+    //printf("Loading kernel SPI module.\n\r");
 
     if (spi_iqrf_open() != BASE_TYPES_OPER_OK) {
-      return BASE_TYPES_OPER_ERROR;
+	      //printf("Open SPI dev error.\n\r");
+      	return BASE_TYPES_OPER_ERROR;
     }
 
     status.dataNotReadyStatus = SPI_IQRF_SPI_DISABLED;
@@ -1545,15 +1553,17 @@ int spi_iqrf_pe(void)
     start = get_ms_ts();
     while (get_ms_ts() - start < 1000) {
         if (spi_iqrf_getSPIStatus(&status) != BASE_TYPES_OPER_OK) {
-            return BASE_TYPES_OPER_ERROR;
+            //printf("SPI status error.\n\r");
+		        return BASE_TYPES_OPER_ERROR;
         }
 
         if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG) {
+		        //printf("PE mode OK.\n\r");
             break;
         }
     }
     if (status.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
-        return BASE_TYPES_OPER_ERROR;
+	      return BASE_TYPES_OPER_ERROR;
     }
 
     return BASE_TYPES_OPER_OK;
