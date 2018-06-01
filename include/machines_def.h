@@ -18,26 +18,14 @@
 #ifndef __MACHINES_DEF_H
 #define __MACHINES_DEF_H
 
-typedef enum iqrf_pin_driver{
-    PIN_GPIO = 0,
-    PIN_SPI
-} iqrf_pin_driver;
-
-/**
-* Switch driver of specified pin to requested driver
-*
-* @return	Zero on success. Negative value on error.
-*/
-static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver);
-
 #define RPI
 
 #ifdef RPI
 
 /** LED GPIO. */
 #define LED_GPIO (22)
-/** Button GPIO. */
-#define BUTTON_GPIO (7)
+/** PGM Switch GPIO. */
+#define PGM_SW_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
 /** SPI CE GPIO. */
@@ -53,9 +41,9 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver);
 /** TR IO2 GPIO. */
 #define IO2_GPIO (25)
 
-static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
-    return 0;
-}
+#ifndef SPI_IQRF_SPI_KERNEL_MODULE
+	#define SPI_IQRF_SPI_KERNEL_MODULE "spi_bcm2835"
+#endif
 
 #endif /* RPI */
 
@@ -63,9 +51,9 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
 
 /** LED GPIO. */
 #define LED_GPIO (3)
-/** Button GPIO. */
-#define BUTTON_GPIO (10)
-/** Reset GPIO. */
+/** PGM Switch GPIO. */
+#define PGM_SW_GPIO (10)
+/** Enable GPIO. */
 #define ENABLE_GPIO (19)
 /** SPI CE GPIO. */
 #define CE0_GPIO (13)
@@ -80,9 +68,9 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
 /** TR IO2 GPIO. */
 #define IO2_GPIO (2)
 
-static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
-    return 0;
-}
+#ifndef SPI_IQRF_SPI_KERNEL_MODULE
+	#define SPI_IQRF_SPI_KERNEL_MODULE "!!! must be defined !!!"
+#endif
 
 #endif /* OPI */
 
@@ -90,9 +78,9 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
 
 /** LED GPIO - NOT USED. */
 #define LED_GPIO (0)
-/** Button GPIO - NOT USED. */
-#define BUTTON_GPIO (0)
-/** Reset GPIO. */
+/** PGM Switch GPIO. */
+#define PGM_SW_GPIO (0)
+/** Enable GPIO. */
 #define ENABLE_GPIO (18)
 /** SPI CE GPIO. */
 #define CE0_GPIO (8)
@@ -107,10 +95,10 @@ static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
 /** TR IO2 GPIO. */
 #define IO2_GPIO (4)
 
-static int iqrf_switch_pin_driver(int pin, iqrf_pin_driver driver) {
-    return 0;
-}
+#ifndef SPI_IQRF_SPI_KERNEL_MODULE
+	#define SPI_IQRF_SPI_KERNEL_MODULE "!!! must be defined !!!"
+#endif
 
 #endif /* UNIPI */
 
-#endif /* __MACHINES_DEF_H */ 
+#endif /* __MACHINES_DEF_H */
