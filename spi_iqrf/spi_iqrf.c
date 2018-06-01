@@ -700,6 +700,9 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 
   spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
+  // Initialize PGM SW pin
+  gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN, 0);
+
   // Reset TR module
   spi_reset_tr();
 
@@ -1508,28 +1511,28 @@ int spi_iqrf_pe(void)
     strcat(sysCommand, spiIqrfConfig->spiKernelModule);
     system(sysCommand);
 
-    gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_IN, 0);
-    gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN, 0);
+//    gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_IN, 0);
+//    gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN, 0);
     gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 1);
 
     if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
         return BASE_TYPES_OPER_ERROR;
     }
 
-    gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0);
+//    gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0);
 
     // Sleep for 500ms
     SLEEP(500);
 
     gpio_setDirection(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN);
-    gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1);
+//    gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1);
 
     // Sleep for 100ms
     SLEEP(100);
 
-    gpio_cleanup(spiIqrfConfig->spiCe0GpioPin);
-    gpio_cleanup(spiIqrfConfig->spiMisoGpioPin);
-    gpio_cleanup(spiIqrfConfig->spiMosiGpioPin);
+//    gpio_cleanup(spiIqrfConfig->spiCe0GpioPin);
+//    gpio_cleanup(spiIqrfConfig->spiMisoGpioPin);
+//    gpio_cleanup(spiIqrfConfig->spiMosiGpioPin);
 
     // Init SPI
     strcpy(sysCommand, "modprobe ");
