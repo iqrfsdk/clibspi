@@ -20,8 +20,8 @@
  * between Linux system and TR modules using SPI and IO. IO functionality is build
  * up on 'gpio' static library.
  *
- * @file		  spi_iqrf.h
- * @date		  21.2.2018
+ * @file		spi_iqrf.h
+ * @date		11.3.2018
  */
 
 #ifndef __SPI_IQRF_H
@@ -44,7 +44,11 @@ extern "C" {
 
 /** SPI device name size */
 // Constant is used to specify array. Therefore, they can not be defined as static const uint8_t.
-#define SPI_DEV_CAPACITY 255
+#define SPI_DEV_CAPACITY 128
+
+/** SPI kernel module name size */
+// Constant is used to specify array. Therefore, they can not be defined as static const uint8_t.
+#define SPI_KERNEL_MODULE_CAPACITY 128
 
 /** IQRF SPI Error constants. */
 typedef enum spi_iqrf_Errors {
@@ -128,17 +132,32 @@ typedef struct spi_iqrf_config_struct
 {
   /** Device file name*/
   char spiDev[SPI_DEV_CAPACITY+1];
+  char spiKernelModule[SPI_KERNEL_MODULE_CAPACITY+1];
   uint8_t enableGpioPin;
   uint8_t spiCe0GpioPin;
   uint8_t spiMisoGpioPin;
   uint8_t spiMosiGpioPin;
   uint8_t spiClkGpioPin;
+  uint8_t spiPgmSwGpioPin;
 } spi_iqrf_config_struct;
 
 /** Default SPI device. */
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
 	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
 #endif //SPI_IQRF_DEFAULT_SPI_DEVICE
+
+/** Programming targets */
+// Constants are used in case. Therefore, they can not be defined as static const uint8_t.
+#define CFG_TARGET              0x00
+#define RFPMG_TARGET            0x01
+#define RFBAND_TARGET           0x02
+#define ACCESS_PWD_TARGET       0x03
+#define USER_KEY_TARGET         0x04
+#define FLASH_TARGET            0x05
+#define INTERNAL_EEPROM_TARGET  0x06
+#define EXTERNAL_EEPROM_TARGET  0x07
+#define SPECIAL_TARGET          0x08
+
 
 /**
  * Initializes SPI device to use.
@@ -261,7 +280,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int
 * @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
-* @return	@c BASE_TYPES_OPER_OK = data were successfully read
+* @return	@c BASE_TYPES_OPER_OK = data were successfully written
 */
 SPI_IQRF_DECLSPEC int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int dataLen);
 

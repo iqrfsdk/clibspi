@@ -151,6 +151,7 @@ int main(void)
         pulseLed(0x03, Green);
         //nanosleep(&delayTime, 0);
         SLEEP(TIME_BETWEEN_LEDS_MS);
+
     }
 
     closeCommunication();
@@ -183,12 +184,14 @@ int openCommunication(void)
 {
     int operResult;
 
-    strcpy (mySpiIqrfConfig.spiDev, "/dev/spidev0.0");
+    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+    strcpy (mySpiIqrfConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
     mySpiIqrfConfig.enableGpioPin = ENABLE_GPIO;
     mySpiIqrfConfig.spiCe0GpioPin = CE0_GPIO;
     mySpiIqrfConfig.spiMisoGpioPin = MISO_GPIO;
     mySpiIqrfConfig.spiMosiGpioPin = MOSI_GPIO;
     mySpiIqrfConfig.spiClkGpioPin = SCLK_GPIO;
+    mySpiIqrfConfig.spiPgmSwGpioPin = PGM_SW_GPIO;
 
     operResult = spi_iqrf_initAdvanced(&mySpiIqrfConfig);
     if (operResult < 0)
