@@ -18,7 +18,7 @@
 #ifndef __MACHINES_DEF_H
 #define __MACHINES_DEF_H
 
-#define RPI
+#define UP
 
 #ifdef RPI
 
@@ -47,6 +47,71 @@
 
 #endif /* RPI */
 
+
+#ifdef UP
+
+/** LED GPIO. */
+#define LED_GPIO (22)
+/** PGM Switch GPIO. */
+#define PGM_SW_GPIO (7)
+/** Enable GPIO. */
+#define ENABLE_GPIO (23)
+/** SPI CE GPIO. */
+#define CE0_GPIO (8)
+/** SPI MISO GPIO */
+#define MISO_GPIO (9)
+/** SPI MOSI GPIO */
+#define MOSI_GPIO (10)
+/** SPI SCLK GPIO */
+#define SCLK_GPIO (11)
+/** TR IO1 GPIO. */
+#define IO1_GPIO (24)
+/** TR IO2 GPIO. */
+#define IO2_GPIO (25)
+
+#ifndef SPI_IQRF_SPI_KERNEL_MODULE
+        #define SPI_IQRF_SPI_KERNEL_MODULE "spi_pxa2xx_platform"
+#endif
+
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+  	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev2.0"
+#endif
+
+#endif /* UP */
+
+
+#ifdef UP2
+
+/** LED GPIO. */
+#define LED_GPIO (22)
+/** PGM Switch GPIO. */
+#define PGM_SW_GPIO (7)
+/** Enable GPIO. */
+#define ENABLE_GPIO (23)
+/** SPI CE GPIO. */
+#define CE0_GPIO (8)
+/** SPI MISO GPIO */
+#define MISO_GPIO (9)
+/** SPI MOSI GPIO */
+#define MOSI_GPIO (10)
+/** SPI SCLK GPIO */
+#define SCLK_GPIO (11)
+/** TR IO1 GPIO. */
+#define IO1_GPIO (24)
+/** TR IO2 GPIO. */
+#define IO2_GPIO (25)
+
+#ifndef SPI_IQRF_SPI_KERNEL_MODULE
+        #define SPI_IQRF_SPI_KERNEL_MODULE "spi_pxa2xx_platform"
+#endif
+
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+        #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
+#endif
+
+#endif /* UP2 */
+
+
 #ifdef OPIZ
 
 /** LED GPIO. */
@@ -72,33 +137,10 @@
 	#define SPI_IQRF_SPI_KERNEL_MODULE ""
 #endif
 
-#endif /* OPI */
-
-#ifdef UNIPI
-
-/** LED GPIO - NOT USED. */
-#define LED_GPIO (0)
-/** PGM Switch GPIO. */
-#define PGM_SW_GPIO (0)
-/** Enable GPIO. */
-#define ENABLE_GPIO (18)
-/** SPI CE GPIO. */
-#define CE0_GPIO (8)
-/** SPI MISO GPIO */
-#define MISO_GPIO (9)
-/** SPI MOSI GPIO */
-#define MOSI_GPIO (10)
-/** SPI SCLK GPIO */
-#define SCLK_GPIO (11)
-/** TR IO1 GPIO. */
-#define IO1_GPIO (17)
-/** TR IO2 GPIO. */
-#define IO2_GPIO (4)
-
-#ifndef SPI_IQRF_SPI_KERNEL_MODULE
-	#define SPI_IQRF_SPI_KERNEL_MODULE "!!! must be defined !!!"
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+  	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
 #endif
 
-#endif /* UNIPI */
+#endif /* OPI */
 
 #endif /* __MACHINES_DEF_H */
