@@ -69,7 +69,7 @@
 #define IO2_GPIO (2)
 
 #ifndef SPI_IQRF_SPI_KERNEL_MODULE
-	#define SPI_IQRF_SPI_KERNEL_MODULE "!!! must be defined !!!"
+	#define SPI_IQRF_SPI_KERNEL_MODULE ""
 #endif
 
 #endif /* OPI */
