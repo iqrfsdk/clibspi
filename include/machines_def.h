@@ -18,7 +18,7 @@
 #ifndef __MACHINES_DEF_H
 #define __MACHINES_DEF_H
 
-#define UP
+#define RPI
 
 #ifdef RPI
 
