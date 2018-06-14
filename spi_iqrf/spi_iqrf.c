@@ -711,7 +711,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 
   if (spi_iqrf_open() == BASE_TYPES_OPER_OK){
     libIsInitialized = 1;
-    spi_iqrf_setCommunicationMode(SPI_IQRF_LOW_SPEED_MODE);
+    spi_iqrf_setCommunicationMode(SPI_IQRF_HIGH_SPEED_MODE);
     return BASE_TYPES_OPER_OK;
   }
   else {

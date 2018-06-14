@@ -25,8 +25,6 @@
 #include "spi_iqrf.h"
 #include "sleepWrapper.h"
 
-//#define ENABLE_HIGH_SPEED_MODE
-
 
 /************************************/
 /* Private constants                */

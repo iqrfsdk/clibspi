@@ -27,8 +27,6 @@
 
 #include "DPA.h"
 
-//#define ENABLE_HIGH_SPEED_MODE
-
 /** Defines whole DPA message. */
 typedef union
 {
@@ -199,15 +197,6 @@ int openCommunication(void)
         printf("Initialization failed: %d \n", operResult);
         return operResult;
     }
-
-#ifdef ENABLE_HIGH_SPEED_MODE
-    operResult = spi_iqrf_setCommunicationMode(SPI_IQRF_HIGH_SPEED_MODE);
-    if (operResult < 0)
-    {
-        printf("High speed communication mode set failed.\n");
-        return operResult;
-    }
-#endif
 
     printf("Communication port is open.\n");
     communicationOpen = 1;
