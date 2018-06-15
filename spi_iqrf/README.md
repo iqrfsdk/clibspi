@@ -24,6 +24,8 @@ spi_iqrf_destroy 		Destroys IQRF SPI library object and releases SPI port
 spi_iqrf_pe			Switch TR module to programming mode
 spi_iqrf_pt			Terminate programming mode
 spi_iqrf_get_tr_module_info	Read identification data of TR module
+spi_iqrf_upload                 Write data to TR module in programming mode
+spi_iqrf_download               Read data from TR module in programming mode
 
 ```
 
