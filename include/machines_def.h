@@ -22,10 +22,10 @@
 
 #ifdef RPI
 
-/** LED GPIO. */
-#define LED_GPIO (22)
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (7)
+#define PGM_SW_GPIO (22)
+/** SPI master enable GPIO. */
+#define SPI_MASTER_EN_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
 /** SPI CE GPIO. */
@@ -41,8 +41,8 @@
 /** TR IO2 GPIO. */
 #define IO2_GPIO (25)
 
-#ifndef SPI_IQRF_SPI_KERNEL_MODULE
-	#define SPI_IQRF_SPI_KERNEL_MODULE "spi_bcm2835"
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
 #endif
 
 #endif /* RPI */
@@ -50,10 +50,10 @@
 
 #ifdef UP
 
-/** LED GPIO. */
-#define LED_GPIO (22)
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (7)
+#define PGM_SW_GPIO (22)
+/** SPI master enable GPIO. */
+#define SPI_MASTER_EN_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
 /** SPI CE GPIO. */
@@ -68,10 +68,6 @@
 #define IO1_GPIO (24)
 /** TR IO2 GPIO. */
 #define IO2_GPIO (25)
-
-#ifndef SPI_IQRF_SPI_KERNEL_MODULE
-        #define SPI_IQRF_SPI_KERNEL_MODULE "spi_pxa2xx_platform"
-#endif
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
   	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev2.0"
@@ -82,10 +78,10 @@
 
 #ifdef UP2
 
-/** LED GPIO. */
-#define LED_GPIO (22)
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (7)
+#define PGM_SW_GPIO (22)
+/** SPI master enable GPIO. */
+#define SPI_MASTER_EN_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
 /** SPI CE GPIO. */
@@ -101,10 +97,6 @@
 /** TR IO2 GPIO. */
 #define IO2_GPIO (25)
 
-#ifndef SPI_IQRF_SPI_KERNEL_MODULE
-        #define SPI_IQRF_SPI_KERNEL_MODULE "spi_pxa2xx_platform"
-#endif
-
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
         #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
 #endif
@@ -114,10 +106,10 @@
 
 #ifdef OPIZ
 
-/** LED GPIO. */
-#define LED_GPIO (3)
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (10)
+#define PGM_SW_GPIO (3)
+/** SPI master enable GPIO. */
+#define SPI_MASTER_EN_GPIO (10)
 /** Enable GPIO. */
 #define ENABLE_GPIO (19)
 /** SPI CE GPIO. */
@@ -132,10 +124,6 @@
 #define IO1_GPIO (18)
 /** TR IO2 GPIO. */
 #define IO2_GPIO (2)
-
-#ifndef SPI_IQRF_SPI_KERNEL_MODULE
-	#define SPI_IQRF_SPI_KERNEL_MODULE ""
-#endif
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
   	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"

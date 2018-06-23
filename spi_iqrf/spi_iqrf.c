@@ -655,18 +655,8 @@ int spi_iqrf_init(const char *dev)
     strcpy(spiIqrfDefaultConfig.spiDev, dev);
   }
 
-  // Copy SPI kernel module name
-  if (strlen(SPI_IQRF_SPI_KERNEL_MODULE) > SPI_KERNEL_MODULE_CAPACITY) {
-    return BASE_TYPES_OPER_ERROR;
-  } else {
-    strcpy(spiIqrfDefaultConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);
-  }
-
   spiIqrfDefaultConfig.enableGpioPin = ENABLE_GPIO;
-  spiIqrfDefaultConfig.spiCe0GpioPin = CE0_GPIO;
-  spiIqrfDefaultConfig.spiMisoGpioPin = MISO_GPIO;
-  spiIqrfDefaultConfig.spiMosiGpioPin = MOSI_GPIO;
-  spiIqrfDefaultConfig.spiClkGpioPin = SCLK_GPIO;
+  spiIqrfDefaultConfig.spiMasterEnGpioPin = SPI_MASTER_EN_GPIO;
   spiIqrfDefaultConfig.spiPgmSwGpioPin = PGM_SW_GPIO;
 
   return spi_iqrf_initAdvanced(&spiIqrfDefaultConfig);
@@ -700,8 +690,9 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 
   spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
-  // Initialize PGM SW pin
-  gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN, 0);
+  // Initialize PGM SW pin & SPI master enable pin
+  gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
+  gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
 
   // Reset TR module
   spi_reset_tr();
@@ -716,6 +707,8 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
   }
   else {
     gpio_cleanup(spiIqrfConfig->enableGpioPin);
+    gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
+    gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
     return BASE_TYPES_OPER_ERROR;
   }
 }
@@ -1490,8 +1483,6 @@ int spi_iqrf_close(void)
 */
 int spi_iqrf_pe(void)
 {
-    uint8_t sysCommand[256];
-
     uint64_t start;
     spi_iqrf_SPIStatus status;
 
@@ -1503,63 +1494,21 @@ int spi_iqrf_pe(void)
         return BASE_TYPES_OPER_OK;
     }
 
-    if (spi_iqrf_close() != BASE_TYPES_OPER_OK) {
-      return BASE_TYPES_OPER_ERROR;
+    gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 0);
+    gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 1);
+
+    if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
+        return BASE_TYPES_OPER_ERROR;
     }
 
-    // if SPI peripheral kernel module exist
-    if (strlen(spiIqrfConfig->spiKernelModule) != 0){
-      strcpy(sysCommand, "modprobe -r ");
-      strcat(sysCommand, spiIqrfConfig->spiKernelModule);
-      system(sysCommand);
+    // Sleep for 500ms
+    SLEEP(500);
 
-      gpio_setup(spiIqrfConfig->spiMisoGpioPin, GPIO_DIRECTION_IN, 0);
-      gpio_setup(spiIqrfConfig->spiMosiGpioPin, GPIO_DIRECTION_IN, 0);
-      gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 1);
+    gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
+    gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
 
-      if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
-          return BASE_TYPES_OPER_ERROR;
-      }
-
-      gpio_setup(spiIqrfConfig->spiCe0GpioPin, GPIO_DIRECTION_OUT, 0);
-
-      // Sleep for 500ms
-      SLEEP(500);
-
-      gpio_setDirection(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN);
-      gpio_setValue(spiIqrfConfig->spiCe0GpioPin, 1);
-
-      // Sleep for 100ms
-      SLEEP(100);
-
-      gpio_cleanup(spiIqrfConfig->spiCe0GpioPin);
-      gpio_cleanup(spiIqrfConfig->spiMisoGpioPin);
-      gpio_cleanup(spiIqrfConfig->spiMosiGpioPin);
-
-      // Init SPI
-      strcpy(sysCommand, "modprobe ");
-      strcat(sysCommand, spiIqrfConfig->spiKernelModule);
-      system(sysCommand);
-    }
-    else {
-      gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 1);
-
-      if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
-          return BASE_TYPES_OPER_ERROR;
-      }
-
-      // Sleep for 500ms
-      SLEEP(500);
-
-      gpio_setDirection(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_IN);
-
-      // Sleep for 100ms
-      SLEEP(100);
-    }
-
-    if (spi_iqrf_open() != BASE_TYPES_OPER_OK) {
-      return BASE_TYPES_OPER_ERROR;
-    }
+    // Sleep for 100ms
+    SLEEP(100);
 
     status.dataNotReadyStatus = SPI_IQRF_SPI_DISABLED;
     status.isDataReady = 0;
@@ -1647,6 +1596,8 @@ int spi_iqrf_destroy(void)
 
   // destroy used rpi_io library
   gpio_cleanup(spiIqrfConfig->enableGpioPin);
+  gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
+  gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
 
   return spi_iqrf_close();
 }
