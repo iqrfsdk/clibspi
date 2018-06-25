@@ -54,13 +54,8 @@ int main(void)
     printf("TR module identification demo application.\n\r");
 
     strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-    strcpy (mySpiIqrfConfig.spiKernelModule, SPI_IQRF_SPI_KERNEL_MODULE);       // use for Raspberry PI or UP
-    //strcpy (mySpiIqrfConfig.spiKernelModule, "");                               // use for Orange PI zero
     mySpiIqrfConfig.enableGpioPin = ENABLE_GPIO;
-    mySpiIqrfConfig.spiCe0GpioPin = CE0_GPIO;
-    mySpiIqrfConfig.spiMisoGpioPin = MISO_GPIO;
-    mySpiIqrfConfig.spiMosiGpioPin = MOSI_GPIO;
-    mySpiIqrfConfig.spiClkGpioPin = SCLK_GPIO;
+    mySpiIqrfConfig.spiMasterEnGpioPin = SPI_MASTER_EN_GPIO;
     mySpiIqrfConfig.spiPgmSwGpioPin = PGM_SW_GPIO;
 
     spi_iqrf_initAdvanced(&mySpiIqrfConfig);
