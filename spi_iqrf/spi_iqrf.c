@@ -193,7 +193,7 @@ static spi_iqrf_config_struct *spiIqrfConfig = &spiIqrfDefaultConfig;
 static int sendAndReceive(void *dataToSend, void *recvBuffer, unsigned int len);
 static int sendAndReceiveLowSpeed(void *dataToSend, void *recvBuffer, unsigned int len);
 static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned int len);
-static int spi_reset_tr(void);
+static int spi_reset_tr(unsigned int spiMasterEnableOutState);
 static int spi_iqrf_open(void);
 static int spi_iqrf_close(void);
 
@@ -690,12 +690,13 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 
   spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
-  // Initialize PGM SW pin & SPI master enable pin
-  gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
+  // Initialize PGM SW pin, SPI master enable pin & power enable
   gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
+  gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1)
+  gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
 
   // Reset TR module
-  spi_reset_tr();
+  spi_reset_tr(1);
 
   // Sleep for 500ms (in this time TR module waits for sequence to switch to programming mode)
   SLEEP(500);
@@ -1381,15 +1382,23 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
 /**
 * Reset TR. This internal function makes reset of TR module and switch power supply ON
 *
+* @param	spiMasterEnableOutState	- state of SPI_MASTER_EN_GPIO pin, after end of reset sequence
 *
 * @return	@c BASE_TYPES_OPER_ERROR = error occures during TR reset
 * @return	@c BASE_TYPES_OPER_OK = TR reset successfull
 */
-static int spi_reset_tr()
+static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 {
 
+  // Disconnect SPI master from TR module
+  if (gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0) < 0) {
+    return BASE_TYPES_OPER_ERROR;
+  }
+
+  SLEEP(1);
+
   // Disable PWR for TR
-  if (gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 0) < 0) {
+  if (gpio_setValue(spiIqrfConfig->enableGpioPin, 0) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1397,11 +1406,18 @@ static int spi_reset_tr()
   SLEEP(300);
 
   // Enable PWR for TR
-  if (gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1) < 0) {
+  if (gpio_setValue(spiIqrfConfig->enableGpioPin, 1) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   SLEEP(1);
+
+  if (spiMasterEnableOutState != 0){
+    // Connect SPI master to TR module
+    if (gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1) < 0) {
+      return BASE_TYPES_OPER_ERROR;
+    }
+  }
 
   return BASE_TYPES_OPER_OK;
 }
@@ -1494,18 +1510,18 @@ int spi_iqrf_pe(void)
         return BASE_TYPES_OPER_OK;
     }
 
-    gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 0);
-    gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 1);
+    gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0);
+    gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 1);
 
-    if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
+    if (spi_reset_tr(0) != BASE_TYPES_OPER_OK) {
         return BASE_TYPES_OPER_ERROR;
     }
 
     // Sleep for 500ms
     SLEEP(500);
 
-    gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
-    gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
+    gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 0);
+    gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1);
 
     // Sleep for 100ms
     SLEEP(100);
@@ -1567,7 +1583,7 @@ int spi_iqrf_pt(void)
         return BASE_TYPES_OPER_ERROR;
     }
 
-    if (spi_reset_tr() != BASE_TYPES_OPER_OK) {
+    if (spi_reset_tr(1) != BASE_TYPES_OPER_OK) {
         return BASE_TYPES_OPER_ERROR;
     }
 
