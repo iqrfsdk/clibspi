@@ -692,7 +692,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 
   // Initialize PGM SW pin, SPI master enable pin & power enable
   gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
-  gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1)
+  gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1);
   gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
 
   // Reset TR module
