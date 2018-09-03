@@ -1011,6 +1011,7 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
 
   receiveBuffer = malloc((dataLen + 4) * sizeof(uint8_t));
   if (receiveBuffer == NULL) {
+       free(dummyData);
        return BASE_TYPES_OPER_ERROR;
   }
 
