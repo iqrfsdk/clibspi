@@ -28,8 +28,7 @@ Library contais following folders
 │
 ├── include                       Folder contains header files for SPI-IQRF src
 ├── spi_iqrf                      Main part of the IQRF SPI lib source codes
-├── spi_javastub                  Source codes for IQRF SPI Java stub
-└── sysfs_gpio                    Source codes for necessary GPIO settings
+└── spi_javastub                  Source codes for IQRF SPI Java stub
 ```
 
 Quick command line compilation on the target

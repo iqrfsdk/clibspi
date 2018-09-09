@@ -5,6 +5,3 @@ set(_SRC_FILES
 )
 
 add_library(${PROJECT_NAME} STATIC ${_SRC_FILES})
-
-target_link_libraries(${PROJECT_NAME} sysfs_gpio)
-

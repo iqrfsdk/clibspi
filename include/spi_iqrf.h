@@ -54,7 +54,7 @@ typedef enum spi_iqrf_Errors {
 	BASE_TYPES_OPER_ERROR = -1,
 	///< An enum constant representing operation on not initialized library
 	BASE_TYPES_LIB_NOT_INITIALIZED = -2,
-	///< An enum constant representing bad gpio_getValue of SPI Status was returned from SPI device
+	///< An enum constant representing bad value of SPI Status was returned from SPI device
 	SPI_IQRF_ERROR_BAD_STATUS = -10,
 	///< An enum constant representing the spi iqrf error CRCS mismatch
 	SPI_IQRF_ERROR_CRCS = -11 /**< CRCS mismatch */
@@ -208,8 +208,8 @@ SPI_IQRF_DECLSPEC int spi_iqrf_setCommunicationMode(spi_iqrf_CommunicationMode c
  *
  * @return	@c BASE_TYPES_OPER_OK if operation has performed successfully.
  * @return	@c BASE_TYPES_OPER_ERROR if an error has occurred during operation. This includes the
- * 			situation when @c spiStatus has had @c NULL gpio_getValue.
- * @return	@c SPI_IQRF_ERROR_BAD_STATUS if returned status gpio_getValue is incorrect.
+ * 			situation when @c spiStatus has had @c NULL value.
+ * @return	@c SPI_IQRF_ERROR_BAD_STATUS if returned status value is incorrect.
  * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED if the library has not been initialized.
  */
 SPI_IQRF_DECLSPEC int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus);
@@ -218,7 +218,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus);
  * Writes specified data into the module.
  *
  * @param [in,out]	dataToWrite	data to write, cannot be @c NULL.
- * @param	dataLen			   	length (in bytes) of data to write, valid gpio_getValue must be in
+ * @param	dataLen			   	length (in bytes) of data to write, valid value must be in
  * 								interval of (0, SPI_IQRF_MAX_DATA_LENGTH>
  *
  * @return	@c BASE_TYPES_OPER_OK if operation has performed successfully.
@@ -231,7 +231,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_write(void *dataToWrite, unsigned int dataLen);
  * Read specified number of bytes from the module and stores them into specified buffer.
  *
  * @param [in,out]	readBuffer	buffer to store data from module, cannot be @c NULL.
- * @param	dataLen			  	length (in bytes) of data to read, valid gpio_getValue must be in
+ * @param	dataLen			  	length (in bytes) of data to read, valid value must be in
  * 								interval of (0, SPI_IQRF_MAX_DATA_LENGTH>
  *
  * @return	@c BASE_TYPES_OPER_OK if operation has performed successfully.

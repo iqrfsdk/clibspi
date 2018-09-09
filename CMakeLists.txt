@@ -49,7 +49,6 @@ endif()
 set(clibspi_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include PARENT_SCOPE)
 set(clibspi_FOUND TRUE PARENT_SCOPE)
 
-add_subdirectory(sysfs_gpio)
 add_subdirectory(examples)
 
 # Configure config file.

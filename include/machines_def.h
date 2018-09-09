@@ -28,18 +28,6 @@
 #define SPI_MASTER_EN_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
-/** SPI CE GPIO. */
-#define CE0_GPIO (8)
-/** SPI MISO GPIO */
-#define MISO_GPIO (9)
-/** SPI MOSI GPIO */
-#define MOSI_GPIO (10)
-/** SPI SCLK GPIO */
-#define SCLK_GPIO (11)
-/** TR IO1 GPIO. */
-#define IO1_GPIO (24)
-/** TR IO2 GPIO. */
-#define IO2_GPIO (25)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
 	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
@@ -56,18 +44,6 @@
 #define SPI_MASTER_EN_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
-/** SPI CE GPIO. */
-#define CE0_GPIO (8)
-/** SPI MISO GPIO */
-#define MISO_GPIO (9)
-/** SPI MOSI GPIO */
-#define MOSI_GPIO (10)
-/** SPI SCLK GPIO */
-#define SCLK_GPIO (11)
-/** TR IO1 GPIO. */
-#define IO1_GPIO (24)
-/** TR IO2 GPIO. */
-#define IO2_GPIO (25)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
   	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev2.0"
@@ -84,18 +60,6 @@
 #define SPI_MASTER_EN_GPIO (7)
 /** Enable GPIO. */
 #define ENABLE_GPIO (23)
-/** SPI CE GPIO. */
-#define CE0_GPIO (8)
-/** SPI MISO GPIO */
-#define MISO_GPIO (9)
-/** SPI MOSI GPIO */
-#define MOSI_GPIO (10)
-/** SPI SCLK GPIO */
-#define SCLK_GPIO (11)
-/** TR IO1 GPIO. */
-#define IO1_GPIO (24)
-/** TR IO2 GPIO. */
-#define IO2_GPIO (25)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
         #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
@@ -112,18 +76,6 @@
 #define SPI_MASTER_EN_GPIO (10)
 /** Enable GPIO. */
 #define ENABLE_GPIO (19)
-/** SPI CE GPIO. */
-#define CE0_GPIO (13)
-/** SPI MISO GPIO */
-#define MISO_GPIO (16)
-/** SPI MOSI GPIO */
-#define MOSI_GPIO (15)
-/** SPI SCLK GPIO */
-#define SCLK_GPIO (14)
-/** TR IO1 GPIO. */
-#define IO1_GPIO (18)
-/** TR IO2 GPIO. */
-#define IO2_GPIO (2)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
   	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
