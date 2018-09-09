@@ -91,16 +91,32 @@ static uint64_t get_ms_ts()
 #endif
 
 #define SPI_IQRF_EXPORTS
+//#define SYSFS_GPIO_DECLSPEC
 
 #include <spi_iqrf.h>
-#include <sysfs_gpio.h>
+#include "declspec.h"
 #include <machines_def.h>
 #include <sleepWrapper.h>
+
+#ifdef WIN32
+#define snprintf _snprintf
+#endif
+
+/* constants */
+#define GPIO_BASE_PATH "/sys/class/gpio"
+#define GPIO_EXPORT_PATH GPIO_BASE_PATH"/export"
+#define GPIO_UNEXPORT_PATH GPIO_BASE_PATH"/unexport"
+
+#define GPIO_DIRECTION_STR "direction"
+#define GPIO_VALUE_STR "value"
+
+/* gpio clibspi_gpio_getDirection state */
+#define GPIO_DIRECTION_IN_STR "in"
+#define GPIO_DIRECTION_OUT_STR "out"
 
 /************************************/
 /* Private constants                */
 /************************************/
-
 
 /** Designates, that file descriptor is not used. */
 static const int NO_FILE_DESCRIPTOR = -1;
@@ -165,6 +181,13 @@ typedef enum _spi_iqrf_SPICtype
   CTYPE_BUFFER_UNCHANGED
 } spi_iqrf_SPICtype;
 
+/** Values that represent GPIO directions. */
+typedef enum _clibspi_gpio_direction {
+	///< An enum constant representing GPIO input
+	GPIO_DIRECTION_IN = 0,
+	///< An enum constant representing GPIO output
+	GPIO_DIRECTION_OUT
+} clibspi_gpio_direction;
 
 /************************************/
 /* Private variables                */
@@ -196,6 +219,25 @@ static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned 
 static int spi_reset_tr(unsigned int spiMasterEnableOutState);
 static int spi_iqrf_open(void);
 static int spi_iqrf_close(void);
+/*
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_export(int gpio);
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_unexport(int gpio);
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_setDirection(int gpio, clibspi_gpio_direction dir);
+SYSFS_GPIO_DECLSPEC clibspi_gpio_direction clibspi_gpio_getDirection(int gpio);
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_setValue(int gpio, int val);
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_getValue(int gpio);
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_setup(int gpio, clibspi_gpio_direction dir, int val);
+SYSFS_GPIO_DECLSPEC int clibspi_gpio_cleanup(int gpio);
+*/
+
+int clibspi_gpio_export(int gpio);
+int clibspi_gpio_unexport(int gpio);
+int clibspi_gpio_setDirection(int gpio, clibspi_gpio_direction dir);
+clibspi_gpio_direction clibspi_gpio_getDirection(int gpio);
+int clibspi_gpio_setValue(int gpio, int val);
+int clibspi_gpio_getValue(int gpio);
+int clibspi_gpio_setup(int gpio, clibspi_gpio_direction dir, int val);
+int clibspi_gpio_cleanup(int gpio);
 
 /**
  * Initializes nullTransfer structure for low speed communication.
@@ -234,7 +276,7 @@ static void initNullTransferHighSpeed(void)
 /**
  * Sets SPI mode.
  *
- * @return	An nonnegative gpio_getValue = success
+ * @return	An nonnegative value = success
  * @return -1 = error.
  */
 static int setMode()
@@ -258,7 +300,7 @@ static int setMode()
 /**
  * Sets bits per word.
  *
- * @return	An nonnegative gpio_getValue = success.
+ * @return	An nonnegative value = success.
  * @return -1 = error.
  */
 static int setBitsPerWord()
@@ -282,7 +324,7 @@ static int setBitsPerWord()
 /**
  * Sets maximum speed.
  *
- * @return	An nonnegative gpio_getValue = success
+ * @return	An nonnegative value = success
  * @return -1 = error.
  */
 static int setMaxSpeed()
@@ -594,11 +636,11 @@ static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen)
 }
 
 /**
- * Checks SPI status gpio_getValue.
+ * Checks SPI status
  *
  * @param	spiStatus	The SPI status obtained from module.
  *
- * @return	Returns 1 if the specified SPI status indicates valid gpio_getValue of IQRF_SPIStatus_DataNotReady enum.
+ * @return	Returns 1 if the specified SPI status indicates valid state of IQRF_SPIStatus_DataNotReady enum.
  */
 static int isSPINoDataReady(uint8_t spiStatus)
 {
@@ -691,9 +733,9 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
   spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
   // Initialize PGM SW pin, SPI master enable pin & power enable
-  gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
-  gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1);
-  gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
+  clibspi_gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
+  clibspi_gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1);
+  clibspi_gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
 
   // Reset TR module
   spi_reset_tr(1);
@@ -707,9 +749,9 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     return BASE_TYPES_OPER_OK;
   }
   else {
-    gpio_cleanup(spiIqrfConfig->enableGpioPin);
-    gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
-    gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
+    clibspi_gpio_cleanup(spiIqrfConfig->enableGpioPin);
+    clibspi_gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
+    clibspi_gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
     return BASE_TYPES_OPER_ERROR;
   }
 }
@@ -812,7 +854,7 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
     return BASE_TYPES_OPER_OK;
   }
 
-  // check, if the return gpio_getValue of SPI status is correct
+  // check, if the return of SPI status is correct
   if (isSPINoDataReady(spiResultStat))
   {
     spiStatus->isDataReady = 0;
@@ -1011,6 +1053,7 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
 
   receiveBuffer = malloc((dataLen + 4) * sizeof(uint8_t));
   if (receiveBuffer == NULL) {
+       free(dummyData);
        return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1391,14 +1434,14 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 {
 
   // Disconnect SPI master from TR module
-  if (gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0) < 0) {
+  if (clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
   SLEEP(1);
 
   // Disable PWR for TR
-  if (gpio_setValue(spiIqrfConfig->enableGpioPin, 0) < 0) {
+  if (clibspi_gpio_setValue(spiIqrfConfig->enableGpioPin, 0) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1406,7 +1449,7 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
   SLEEP(300);
 
   // Enable PWR for TR
-  if (gpio_setValue(spiIqrfConfig->enableGpioPin, 1) < 0) {
+  if (clibspi_gpio_setValue(spiIqrfConfig->enableGpioPin, 1) < 0) {
     return BASE_TYPES_OPER_ERROR;
   }
 
@@ -1414,7 +1457,7 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 
   if (spiMasterEnableOutState != 0){
     // Connect SPI master to TR module
-    if (gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1) < 0) {
+    if (clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1) < 0) {
       return BASE_TYPES_OPER_ERROR;
     }
   }
@@ -1510,8 +1553,8 @@ int spi_iqrf_pe(void)
         return BASE_TYPES_OPER_OK;
     }
 
-    gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0);
-    gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 1);
+    clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0);
+    clibspi_gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 1);
 
     if (spi_reset_tr(0) != BASE_TYPES_OPER_OK) {
         return BASE_TYPES_OPER_ERROR;
@@ -1520,8 +1563,8 @@ int spi_iqrf_pe(void)
     // Sleep for 500ms
     SLEEP(500);
 
-    gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 0);
-    gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1);
+    clibspi_gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 0);
+    clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1);
 
     // Sleep for 100ms
     SLEEP(100);
@@ -1611,9 +1654,322 @@ int spi_iqrf_destroy(void)
   libIsInitialized = 0;
 
   // destroy used rpi_io library
-  gpio_cleanup(spiIqrfConfig->enableGpioPin);
-  gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
-  gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
+  clibspi_gpio_cleanup(spiIqrfConfig->enableGpioPin);
+  clibspi_gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
+  clibspi_gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
 
   return spi_iqrf_close();
+}
+
+/* ========================================================================= */
+/*                      GPIO manipulation functions                          */
+/* ========================================================================= */
+
+/**
+* Setup GPIO path
+*
+* @param [in]	gpio		GPIO
+* @param [in]	action		action
+* @param [in]	target		target
+* @param [in]	len			length
+*
+*/
+static void clibspi_setup_gpio_path(const int gpio, const char *action, char *target, int len)
+{
+	snprintf(target, len, GPIO_BASE_PATH"/gpio%d/%s", gpio, action);
+}
+
+/**
+* Writes data stored in @c fd file to buffer.
+*
+* @param [in]	fd		file to write.
+* @param [in]	buf		buffer where file is written
+*
+* @return	-1 = error during write
+* @return	0 = file was successfully written
+*/
+static int clibspi_write_data(FILE *fd, const char *buf)
+{
+	int ret = 0;
+
+	ret = fwrite(buf, 1, strlen(buf), fd);
+	if (ret != strlen(buf)) {
+		printf("Error during writing to file\n");
+		ret = -1;
+	}
+	else {
+		ret = 0;
+	}
+
+	return ret;
+}
+
+/**
+* Exports the GPIO pin to the GPIO array
+*
+* @param num	GPIO number
+*
+* @return	0 = operation was performed successfully.
+* @return	-1 = some error occurred.
+*/
+int clibspi_gpio_export(int num)
+{
+	FILE *fd = fopen(GPIO_EXPORT_PATH, "w");
+	char buf[5];
+	int ret;
+
+	if (!fd) {
+		printf("Error during opening file: %s\n", strerror(errno));
+		return -1;
+	}
+
+	snprintf(buf, sizeof(buf), "%d", num);
+	ret = clibspi_write_data(fd, buf);
+	if (ret)
+		goto err;
+
+err:
+	fclose(fd);
+	return ret;
+}
+
+/**
+* Unexports the GPIO pin from the GPIO array
+*
+* @param num	GPIO number
+*
+* @return	0 = operation was performed successfully.
+* @return	-1 = some error occurred.
+*/
+int clibspi_gpio_unexport(int num)
+{
+	FILE *fd = fopen(GPIO_UNEXPORT_PATH, "w");
+	char buf[5];
+	int ret;
+
+	if (!fd) {
+		printf("Error during opening file: %s\n", strerror(errno));
+		return -1;
+	}
+
+	snprintf(buf, sizeof(buf), "%d", num);
+	ret = clibspi_write_data(fd, buf);
+	if (ret)
+		goto err;
+
+err:
+	fclose(fd);
+	return ret;
+}
+
+
+/**
+* Gets direction of the GPIO
+*
+* @param gpio	GPIO
+* @param dir	GPIO direction  = GPIO_DIRECTION_IN or GPIO_DIRECTION_OUT
+*
+* @return	0 = operation was performed successfully.
+* @return	-1 = some error occurred.
+*/
+int clibspi_gpio_setDirection(int gpio, clibspi_gpio_direction dir)
+{
+	char path[50];
+	char buf[4];
+	FILE *fd = NULL;
+	int ret;
+
+	clibspi_setup_gpio_path(gpio, GPIO_DIRECTION_STR, path, sizeof(path));
+
+	fd = fopen(path, "w");
+
+	if (!fd) {
+		printf("Error during opening file (set direction): %s  %s\n", path, strerror(errno));
+		return -1;
+	}
+	if (dir == GPIO_DIRECTION_IN) {
+		strncpy(buf, GPIO_DIRECTION_IN_STR, sizeof(buf));
+	}
+	else if (dir == GPIO_DIRECTION_OUT) {
+		strncpy(buf, GPIO_DIRECTION_OUT_STR, sizeof(buf));
+	}
+
+	ret = clibspi_write_data(fd, buf);
+	if (ret)
+		goto err;
+
+err:
+	fclose(fd);
+	return ret;
+}
+
+/**
+* Gets direction of the GPIO
+*
+* @param gpio	GPIO
+*
+* @return	GPIO_DIRECTION_IN = GPIO set to input.
+* @return	GPIO_DIRECTION_OUT = GPIO set to output.
+*/
+clibspi_gpio_direction clibspi_gpio_getDirection(int gpio)
+{
+	char path[50];
+	char buf[4];
+	FILE *fd = NULL;
+	int ret;
+	clibspi_gpio_direction dir;
+
+	clibspi_setup_gpio_path(gpio, GPIO_DIRECTION_STR, path, sizeof(path));
+
+	fd = fopen(path, "r");
+
+	if (!fd) {
+		printf("Error during opening file (get direction): %s\n", strerror(errno));
+		return -1;
+	}
+
+	ret = fread(buf, 1, sizeof(buf), fd);
+	if (!ret) {
+		printf("Error during reading file\n");
+		ret = -1;
+		goto err;
+	}
+
+	if (!strcmp(buf, GPIO_DIRECTION_IN_STR))
+		dir = GPIO_DIRECTION_IN;
+	else if (!strcmp(buf, GPIO_DIRECTION_OUT_STR))
+		dir = GPIO_DIRECTION_OUT;
+
+	ret = 0;
+
+err:
+	fclose(fd);
+	return ret;
+
+}
+
+/**
+* Sets GPIO value
+*
+* @param gpio	GPIO
+* @param val	value
+*
+* @return	0 = operation was performed successfully.
+* @return	-1 = some error occurred.
+*/
+int clibspi_gpio_setValue(int gpio, int val)
+{
+	char path[50];
+	char buf[2];
+	FILE *fd = NULL;
+	int ret;
+
+	clibspi_setup_gpio_path(gpio, GPIO_VALUE_STR, path, sizeof(path));
+
+	fd = fopen(path, "w");
+
+	if (!fd) {
+		printf("Error during opening file: %s\n", strerror(errno));
+		return -1;
+	}
+
+	snprintf(buf, sizeof(buf), "%d", val);
+	ret = clibspi_write_data(fd, buf);
+	if (ret)
+		goto err;
+
+err:
+	fclose(fd);
+	return ret;
+}
+
+/**
+* Gets GPIO value
+*
+* @param gpio	GPIO
+*
+* @return	GPIO value
+*/
+int clibspi_gpio_getValue(int gpio)
+{
+	char path[50];
+	char buf[2];
+	FILE *fd = NULL;
+	int ret;
+
+	clibspi_setup_gpio_path(gpio, GPIO_VALUE_STR, path, sizeof(path));
+
+	fd = fopen(path, "r");
+
+	if (!fd) {
+		printf("Error during opening file: %s\n", strerror(errno));
+		return -1;
+	}
+
+	ret = fread(buf, 1, sizeof(buf), fd);
+	if (!ret) {
+		printf("Error during reading file\n");
+		ret = -1;
+		goto err;
+	}
+
+	ret = strtol(buf, NULL, 10);
+
+err:
+	fclose(fd);
+	return ret;
+}
+
+/**
+* Setup GPIO
+*
+* @param gpio	GPIO
+* @param dir	GPIO direction
+* @param val	GPIO value
+*
+* @return	0 = operation was performed successfully.
+* @return	-1 = some error occurred.
+*/
+int clibspi_gpio_setup(int gpio, clibspi_gpio_direction dir, int val)
+{
+	int ret;
+
+	ret = clibspi_gpio_export(gpio);
+	if (ret)
+		return ret;
+
+	int i;
+	for (i = 1; i <= 10; i++) {
+	  ret = clibspi_gpio_setDirection(gpio, dir);
+	  if (!ret) {
+		printf("clibspi_gpio_setup() setDir success: %d\n", i);
+		break;
+	  }
+	  else {
+		printf("clibspi_gpio_setup() setDir failed wait for 100 ms to next try: %d\n", i);
+		SLEEP(100);
+	  }
+	}
+
+	// set gpio value when output clibspi_gpio_getDirection
+	if (dir == GPIO_DIRECTION_OUT) {
+		ret = clibspi_gpio_setValue(gpio, val);
+		if (ret)
+			return ret;
+	}
+
+	return ret;
+}
+
+/**
+* Cleans and releases GPIO
+*
+* @param gpio	GPIO
+*
+* @return	0 = operation was performed successfully.
+* @return	-1 = some error occurred.
+*/
+int clibspi_gpio_cleanup(int gpio)
+{
+	return (clibspi_gpio_unexport(gpio));
 }

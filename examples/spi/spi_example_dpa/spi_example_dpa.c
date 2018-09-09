@@ -158,7 +158,7 @@ int main(void)
 
 /**
  * Prints specified user message and specified error description to standard output, cleans up
- * the Rpi_spi_iqrf library, and exits the program with specified return gpio_getValue.
+ * the Rpi_spi_iqrf library, and exits the program with specified return value.
  *
  * @param	userMessage	Message describing the error.
  * @param	error	   	The error identificator.
