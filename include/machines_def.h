@@ -18,19 +18,24 @@
 #ifndef __MACHINES_DEF_H
 #define __MACHINES_DEF_H
 
+// select used platform (uncomment one selection)
 #define RPI
+// #define UP
+// #define UP2
+// #define OPIZ
+
 
 #ifdef RPI
 
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (22)
-/** SPI master enable GPIO. */
-#define SPI_MASTER_EN_GPIO (7)
-/** Enable GPIO. */
-#define ENABLE_GPIO (23)
+#define PGM_SWITCH_GPIO (22)
+/** Bus enable GPIO. */
+#define BUS_ENABLE_GPIO (7)
+/** Power enable GPIO. */
+#define POWER_ENABLE_GPIO (23)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
-	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
 #endif
 
 #endif /* RPI */
@@ -39,14 +44,14 @@
 #ifdef UP
 
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (22)
-/** SPI master enable GPIO. */
-#define SPI_MASTER_EN_GPIO (7)
-/** Enable GPIO. */
-#define ENABLE_GPIO (23)
+#define PGM_SWITCH_GPIO (22)
+/** Bus enable GPIO. */
+#define BUS_ENABLE_GPIO (7)
+/** Power enable GPIO. */
+#define POWER_ENABLE_GPIO (23)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
-  	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev2.0"
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev2.0"
 #endif
 
 #endif /* UP */
@@ -55,14 +60,14 @@
 #ifdef UP2
 
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (22)
-/** SPI master enable GPIO. */
-#define SPI_MASTER_EN_GPIO (7)
-/** Enable GPIO. */
-#define ENABLE_GPIO (23)
+#define PGM_SWITCH_GPIO (22)
+/** Bus enable GPIO. */
+#define BUS_ENABLE_GPIO (7)
+/** Power enable GPIO. */
+#define POWER_ENABLE_GPIO (23)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
-        #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
 #endif
 
 #endif /* UP2 */
@@ -71,14 +76,14 @@
 #ifdef OPIZ
 
 /** PGM Switch GPIO. */
-#define PGM_SW_GPIO (3)
-/** SPI master enable GPIO. */
-#define SPI_MASTER_EN_GPIO (10)
-/** Enable GPIO. */
-#define ENABLE_GPIO (19)
+#define PGM_SWITCH_GPIO (3)
+/** Bus enable GPIO. */
+#define BUS_ENABLE_GPIO (10)
+/** Power enable GPIO. */
+#define POWER_ENABLE_GPIO (19)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
-  	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
 #endif
 
 #endif /* OPI */

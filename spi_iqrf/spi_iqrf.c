@@ -65,12 +65,12 @@ static uint64_t get_ms_ts()
 
 int ioctl(int fd, int rw, int* mode)
 {
-  return 0;
+    return 0;
 }
 
 int nanosleep(int time)
 {
-  return 0;
+    return 0;
 }
 
 //struct timespec {
@@ -82,16 +82,13 @@ static uint64_t get_ms_ts()
 {
     LARGE_INTEGER counter, frequency;
 
-	QueryPerformanceFrequency(&frequency);
-	QueryPerformanceCounter(&counter);
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&counter);
 
-	return counter.QuadPart / (frequency.QuadPart / 1000);
+    return counter.QuadPart / (frequency.QuadPart / 1000);
 }
 
 #endif
-
-#define SPI_IQRF_EXPORTS
-//#define SYSFS_GPIO_DECLSPEC
 
 #include <spi_iqrf.h>
 #include "declspec.h"
@@ -177,16 +174,16 @@ static const uint8_t SPI_IQRF_SPI_CMD_UPLOAD_IQRF = 0xF9;
 /** Defines how to work with IQRF communication buffer. */
 typedef enum _spi_iqrf_SPICtype
 {
-  CTYPE_BUFFER_CHANGED,
-  CTYPE_BUFFER_UNCHANGED
+    CTYPE_BUFFER_CHANGED,
+    CTYPE_BUFFER_UNCHANGED
 } spi_iqrf_SPICtype;
 
 /** Values that represent GPIO directions. */
 typedef enum _clibspi_gpio_direction {
-	///< An enum constant representing GPIO input
-	GPIO_DIRECTION_IN = 0,
-	///< An enum constant representing GPIO output
-	GPIO_DIRECTION_OUT
+    ///< An enum constant representing GPIO input
+    GPIO_DIRECTION_IN = 0,
+    ///< An enum constant representing GPIO output
+    GPIO_DIRECTION_OUT
 } clibspi_gpio_direction;
 
 /************************************/
@@ -219,16 +216,6 @@ static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned 
 static int spi_reset_tr(unsigned int spiMasterEnableOutState);
 static int spi_iqrf_open(void);
 static int spi_iqrf_close(void);
-/*
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_export(int gpio);
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_unexport(int gpio);
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_setDirection(int gpio, clibspi_gpio_direction dir);
-SYSFS_GPIO_DECLSPEC clibspi_gpio_direction clibspi_gpio_getDirection(int gpio);
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_setValue(int gpio, int val);
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_getValue(int gpio);
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_setup(int gpio, clibspi_gpio_direction dir, int val);
-SYSFS_GPIO_DECLSPEC int clibspi_gpio_cleanup(int gpio);
-*/
 
 int clibspi_gpio_export(int gpio);
 int clibspi_gpio_unexport(int gpio);
@@ -246,15 +233,15 @@ int clibspi_gpio_cleanup(int gpio);
  */
 static void initNullTransferLowSpeed(void)
 {
-  nullTransfer.tx_buf = 0;
-  nullTransfer.rx_buf = 0;
-  nullTransfer.len = 0;
-  nullTransfer.delay_usecs = DELAY_AFTER_CS_LS_US;
-  nullTransfer.speed_hz = SPI_MAX_SPEED;
-  nullTransfer.bits_per_word = BITS_PER_WORD;
-  nullTransfer.cs_change = CS_DESELECT_DEVICE;
-  nullTransfer.rx_nbits = 0;
-  nullTransfer.tx_nbits = 0;
+    nullTransfer.tx_buf = 0;
+    nullTransfer.rx_buf = 0;
+    nullTransfer.len = 0;
+    nullTransfer.delay_usecs = DELAY_AFTER_CS_LS_US;
+    nullTransfer.speed_hz = SPI_MAX_SPEED;
+    nullTransfer.bits_per_word = BITS_PER_WORD;
+    nullTransfer.cs_change = CS_DESELECT_DEVICE;
+    nullTransfer.rx_nbits = 0;
+    nullTransfer.tx_nbits = 0;
 }
 
 /**
@@ -262,15 +249,15 @@ static void initNullTransferLowSpeed(void)
 */
 static void initNullTransferHighSpeed(void)
 {
-  nullTransfer.tx_buf = (unsigned long)NULL;
-  nullTransfer.rx_buf = (unsigned long)NULL;
-  nullTransfer.len = 0;
-  nullTransfer.delay_usecs = DELAY_AFTER_CS_HS_US;
-  nullTransfer.speed_hz = SPI_MAX_SPEED;
-  nullTransfer.bits_per_word = BITS_PER_WORD;
-  nullTransfer.cs_change = CS_DESELECT_DEVICE;
-  nullTransfer.rx_nbits = 0;
-  nullTransfer.tx_nbits = 0;
+    nullTransfer.tx_buf = (unsigned long)NULL;
+    nullTransfer.rx_buf = (unsigned long)NULL;
+    nullTransfer.len = 0;
+    nullTransfer.delay_usecs = DELAY_AFTER_CS_HS_US;
+    nullTransfer.speed_hz = SPI_MAX_SPEED;
+    nullTransfer.bits_per_word = BITS_PER_WORD;
+    nullTransfer.cs_change = CS_DESELECT_DEVICE;
+    nullTransfer.rx_nbits = 0;
+    nullTransfer.tx_nbits = 0;
 }
 
 /**
@@ -281,20 +268,20 @@ static void initNullTransferHighSpeed(void)
  */
 static int setMode()
 {
-  int setResult = 0;
-  uint8_t rdMode = -1;
+    int setResult = 0;
+    uint8_t rdMode = -1;
 
-  setResult = ioctl(fd, SPI_IOC_WR_MODE, &SPI_MODE);
-  if (setResult < 0) {
-    return setResult;
-  }
+    setResult = ioctl(fd, SPI_IOC_WR_MODE, &SPI_MODE);
+    if (setResult < 0) {
+        return setResult;
+    }
 
-  setResult = ioctl(fd, SPI_IOC_RD_MODE, &rdMode);
-  if (setResult < 0) {
-    return setResult;
-  }
+    setResult = ioctl(fd, SPI_IOC_RD_MODE, &rdMode);
+    if (setResult < 0) {
+        return setResult;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
@@ -305,20 +292,20 @@ static int setMode()
  */
 static int setBitsPerWord()
 {
-  int setResult = 0;
-  uint8_t rdBits = -1;
+    int setResult = 0;
+    uint8_t rdBits = -1;
 
-  setResult = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &BITS_PER_WORD);
-  if (setResult < 0) {
-    return setResult;
-  }
+    setResult = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &BITS_PER_WORD);
+    if (setResult < 0) {
+        return setResult;
+    }
 
-  setResult = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &rdBits);
-  if (setResult < 0) {
-    return setResult;
-  }
+    setResult = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &rdBits);
+    if (setResult < 0) {
+        return setResult;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
@@ -329,20 +316,20 @@ static int setBitsPerWord()
  */
 static int setMaxSpeed()
 {
-  int setResult = 0;
-  uint8_t rdSpeed = -1;
+    int setResult = 0;
+    uint8_t rdSpeed = -1;
 
-  setResult = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &SPI_MAX_SPEED);
-  if (setResult < 0) {
-    return setResult;
-  }
+    setResult = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &SPI_MAX_SPEED);
+    if (setResult < 0) {
+        return setResult;
+    }
 
-  setResult = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &rdSpeed);
-  if (setResult < 0) {
-    return setResult;
-  }
+    setResult = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &rdSpeed);
+    if (setResult < 0) {
+        return setResult;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
@@ -356,16 +343,16 @@ static int setMaxSpeed()
  */
 static int sendData(void *dataToSend, unsigned int len)
 {
-  uint8_t *dummyData;
-  int32_t operResult;
+    uint8_t *dummyData;
+    int32_t operResult;
 
-  dummyData = malloc(len * sizeof(uint8_t));
+    dummyData = malloc(len * sizeof(uint8_t));
 
-  operResult = sendAndReceive(dataToSend, dummyData, len);
+    operResult = sendAndReceive(dataToSend, dummyData, len);
 
-  free(dummyData);
+    free(dummyData);
 
-  return operResult;
+    return operResult;
 }
 
 /**
@@ -381,9 +368,9 @@ static int sendData(void *dataToSend, unsigned int len)
  */
 static int sendAndReceive(void *dataToSend, void *recvBuffer, unsigned int len)
 {
-  if (communicationMode == SPI_IQRF_LOW_SPEED_MODE)
-    return sendAndReceiveLowSpeed(dataToSend, recvBuffer, len);
-  return sendAndReceiveHighSpeed(dataToSend, recvBuffer, len);
+    if (communicationMode == SPI_IQRF_LOW_SPEED_MODE)
+        return sendAndReceiveLowSpeed(dataToSend, recvBuffer, len);
+    return sendAndReceiveHighSpeed(dataToSend, recvBuffer, len);
 }
 
 /**
@@ -399,56 +386,56 @@ static int sendAndReceive(void *dataToSend, void *recvBuffer, unsigned int len)
 */
 static int sendAndReceiveLowSpeed(void *dataToSend, void *recvBuffer, unsigned int len)
 {
-  int result = 0;
-  int trans_id = 0;
-  uint8_t* tx = NULL;
-  uint8_t* rx = NULL;
-  struct spi_ioc_transfer completeTransfer[2];
+    int result = 0;
+    int trans_id = 0;
+    uint8_t* tx = NULL;
+    uint8_t* rx = NULL;
+    struct spi_ioc_transfer completeTransfer[2];
 
-  tx = malloc(len * sizeof(uint8_t));
-  memcpy(tx, dataToSend, len * sizeof(uint8_t));
+    tx = malloc(len * sizeof(uint8_t));
+    memcpy(tx, dataToSend, len * sizeof(uint8_t));
 
-  rx = malloc(len * sizeof(uint8_t));
-  memset(rx, 0, len * sizeof(uint8_t));
+    rx = malloc(len * sizeof(uint8_t));
+    memset(rx, 0, len * sizeof(uint8_t));
 
-  struct spi_ioc_transfer dataTransfer = {
-    .tx_buf = (unsigned long)tx,
-    .rx_buf = (unsigned long)rx,
-    .len = 1,
-    .delay_usecs = DELAY_AFTER_CS_LS_US,
-    .speed_hz = SPI_MAX_SPEED,
-    .bits_per_word = BITS_PER_WORD,
-    .cs_change = CS_DESELECT_DEVICE,
-    .tx_nbits = 0,
-    .rx_nbits = 0
-  };
+    struct spi_ioc_transfer dataTransfer = {
+        .tx_buf = (unsigned long)tx,
+        .rx_buf = (unsigned long)rx,
+        .len = 1,
+        .delay_usecs = DELAY_AFTER_CS_LS_US,
+        .speed_hz = SPI_MAX_SPEED,
+        .bits_per_word = BITS_PER_WORD,
+        .cs_change = CS_DESELECT_DEVICE,
+        .tx_nbits = 0,
+        .rx_nbits = 0
+    };
 
-  completeTransfer[0] = nullTransfer;
-  completeTransfer[1] = dataTransfer;
+    completeTransfer[0] = nullTransfer;
+    completeTransfer[1] = dataTransfer;
 
-  for (trans_id = 0; trans_id < len; trans_id++) {
-    completeTransfer[1].tx_buf = (unsigned long)&(tx[trans_id]);
-    completeTransfer[1].rx_buf = (unsigned long)&(rx[trans_id]);
+    for (trans_id = 0; trans_id < len; trans_id++) {
+        completeTransfer[1].tx_buf = (unsigned long)&(tx[trans_id]);
+        completeTransfer[1].rx_buf = (unsigned long)&(rx[trans_id]);
 
-    result = ioctl(fd, SPI_IOC_MESSAGE(2), &completeTransfer);
-    if (result == -1) {
-      goto end;
+        result = ioctl(fd, SPI_IOC_MESSAGE(2), &completeTransfer);
+        if (result == -1) {
+            goto end;
+        }
+
+        // delay T3
+        int sleepResult = nanosleep(&T2_DELAY, NULL);
+        if (sleepResult == -1) {
+            goto end;
+        }
     }
 
-    // delay T3
-    int sleepResult = nanosleep(&T2_DELAY, NULL);
-    if (sleepResult == -1) {
-      goto end;
-    }
-  }
-
-  memcpy(recvBuffer, rx, len * sizeof(uint8_t));
+    memcpy(recvBuffer, rx, len * sizeof(uint8_t));
 
 end:
-  free(tx);
-  free(rx);
+    free(tx);
+    free(rx);
 
-  return result;
+    return result;
 }
 
 /**
@@ -464,66 +451,66 @@ end:
 */
 static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned int len)
 {
-  int result = 0;
-  int trans_id = 0;
-  uint8_t *tx = NULL;
-  uint8_t *rx = NULL;
-  struct spi_ioc_transfer completeTransfer[2];
+    int result = 0;
+    int trans_id = 0;
+    uint8_t *tx = NULL;
+    uint8_t *rx = NULL;
+    struct spi_ioc_transfer completeTransfer[2];
 
-  tx = malloc(len * sizeof(uint8_t));
-  memcpy(tx, dataToSend, len * sizeof(uint8_t));
+    tx = malloc(len * sizeof(uint8_t));
+    memcpy(tx, dataToSend, len * sizeof(uint8_t));
 
-  rx = malloc(len * sizeof(uint8_t));
-  memset(rx, 0, len * sizeof(uint8_t));
+    rx = malloc(len * sizeof(uint8_t));
+    memset(rx, 0, len * sizeof(uint8_t));
 
-  struct spi_ioc_transfer dataTransfer = {
-    .tx_buf = (unsigned long)tx,
-    .rx_buf = (unsigned long)rx,
-    .len = 1,
-    .delay_usecs = DELAY_AFTER_BYTE_HS_US,
-    .speed_hz = SPI_MAX_SPEED,
-    .bits_per_word = BITS_PER_WORD,
-    .cs_change = CS_DESELECT_DEVICE,
-    .tx_nbits = 0,
-    .rx_nbits = 0
-  };
+    struct spi_ioc_transfer dataTransfer = {
+        .tx_buf = (unsigned long)tx,
+        .rx_buf = (unsigned long)rx,
+        .len = 1,
+        .delay_usecs = DELAY_AFTER_BYTE_HS_US,
+        .speed_hz = SPI_MAX_SPEED,
+        .bits_per_word = BITS_PER_WORD,
+        .cs_change = CS_DESELECT_DEVICE,
+        .tx_nbits = 0,
+        .rx_nbits = 0
+    };
 
-  completeTransfer[0] = nullTransfer;
-  completeTransfer[1] = dataTransfer;
+      completeTransfer[0] = nullTransfer;
+      completeTransfer[1] = dataTransfer;
 
-  if (len > 1)
-    completeTransfer[1].cs_change = CS_DEVICE_STAY_SELECTED;
+    if (len > 1)
+        completeTransfer[1].cs_change = CS_DEVICE_STAY_SELECTED;
 
-  // first byte
-  result = ioctl(fd, SPI_IOC_MESSAGE(2), &completeTransfer);
-  if (result < 0) {
-    goto end;
-  }
-
-  ++trans_id;
-
-  for (; trans_id < len; trans_id++) {
-    completeTransfer[1].tx_buf = (unsigned long)&(tx[trans_id]);
-    completeTransfer[1].rx_buf = (unsigned long)&(rx[trans_id]);
-
-    if (trans_id == (len - 1)) {
-      completeTransfer[1].delay_usecs = DELAY_AFTER_CS_HS_US;
-      completeTransfer[1].cs_change = CS_DESELECT_DEVICE;
-    }
-
-    result = ioctl(fd, SPI_IOC_MESSAGE(1), &completeTransfer[1]);
+    // first byte
+    result = ioctl(fd, SPI_IOC_MESSAGE(2), &completeTransfer);
     if (result < 0) {
-      goto end;
+        goto end;
     }
-  }
 
-  memcpy(recvBuffer, rx, len * sizeof(uint8_t));
+    ++trans_id;
+
+    for (; trans_id < len; trans_id++) {
+        completeTransfer[1].tx_buf = (unsigned long)&(tx[trans_id]);
+        completeTransfer[1].rx_buf = (unsigned long)&(rx[trans_id]);
+
+        if (trans_id == (len - 1)) {
+            completeTransfer[1].delay_usecs = DELAY_AFTER_CS_HS_US;
+            completeTransfer[1].cs_change = CS_DESELECT_DEVICE;
+        }
+
+        result = ioctl(fd, SPI_IOC_MESSAGE(1), &completeTransfer[1]);
+        if (result < 0) {
+            goto end;
+        }
+    }
+
+    memcpy(recvBuffer, rx, len * sizeof(uint8_t));
 
 end:
-  free(tx);
-  free(rx);
+    free(tx);
+    free(rx);
 
-  return result;
+    return result;
 }
 
 /*
@@ -536,10 +523,10 @@ end:
  */
 static int isSPIDataReady(uint8_t spiStatus)
 {
-  if ((spiStatus >= 0x40) && (spiStatus < SPI_IQRF_SPI_READY_COMM)) {
-    return 1;
-  }
-  return 0;
+    if ((spiStatus >= 0x40) && (spiStatus < SPI_IQRF_SPI_READY_COMM)) {
+        return 1;
+    }
+    return 0;
 }
 
 /*
@@ -552,10 +539,10 @@ static int isSPIDataReady(uint8_t spiStatus)
  */
 static void setPTYPE(uint8_t *pType, spi_iqrf_SPICtype ctype, unsigned int dataLen)
 {
-  *pType = dataLen;
-  if (ctype == CTYPE_BUFFER_CHANGED) {
-    *pType |= 128;
-  }
+    *pType = dataLen;
+    if (ctype == CTYPE_BUFFER_CHANGED) {
+        *pType |= 128;
+    }
 }
 
 /*
@@ -568,11 +555,11 @@ static void setPTYPE(uint8_t *pType, spi_iqrf_SPICtype ctype, unsigned int dataL
 */
 static void bufferXor(uint8_t *crcm, uint8_t *buffer, unsigned int buffSize)
 {
-  uint8_t dataId = 0;
+    uint8_t dataId = 0;
 
-  for (dataId = 0; dataId < buffSize; dataId++) {
-    *crcm ^= buffer[dataId];
-  }
+    for (dataId = 0; dataId < buffSize; dataId++) {
+        *crcm ^= buffer[dataId];
+    }
 }
 
 /*
@@ -586,13 +573,13 @@ static void bufferXor(uint8_t *crcm, uint8_t *buffer, unsigned int buffSize)
  */
 static uint8_t getCRCM(uint8_t *data, unsigned int dataLen)
 {
-  uint8_t crcm = 0x5F;
+    uint8_t crcm = 0x5F;
 
-  crcm ^= data[0];
-  crcm ^= data[1];
-  bufferXor(&crcm, &data[2], dataLen);
+    crcm ^= data[0];
+    crcm ^= data[1];
+    bufferXor(&crcm, &data[2], dataLen);
 
-  return crcm;
+    return crcm;
 }
 
 /*
@@ -606,11 +593,11 @@ static uint8_t getCRCM(uint8_t *data, unsigned int dataLen)
  */
 static uint8_t getCRCS(uint8_t ptype, uint8_t *data, unsigned int dataLen)
 {
-  uint8_t crcs = 0x5F ^ ptype;
+    uint8_t crcs = 0x5F ^ ptype;
 
-  bufferXor(&crcs, &data[2], dataLen);
+    bufferXor(&crcs, &data[2], dataLen);
 
-  return crcs;
+    return crcs;
 }
 
 /*
@@ -625,14 +612,14 @@ static uint8_t getCRCS(uint8_t ptype, uint8_t *data, unsigned int dataLen)
  */
 static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen)
 {
-  uint8_t countedCrcs = 0;
-  uint8_t crcsToVerify = recvData[dataLen + 2];
+    uint8_t countedCrcs = 0;
+    uint8_t crcsToVerify = recvData[dataLen + 2];
 
-  countedCrcs = getCRCS(ptype, recvData, dataLen);
-  if (crcsToVerify == countedCrcs) {
-    return 1;
-  }
-  return 0;
+    countedCrcs = getCRCS(ptype, recvData, dataLen);
+    if (crcsToVerify == countedCrcs) {
+        return 1;
+    }
+    return 0;
 }
 
 /**
@@ -644,20 +631,20 @@ static int verifyCRCS(uint8_t ptype, uint8_t *recvData, unsigned int dataLen)
  */
 static int isSPINoDataReady(uint8_t spiStatus)
 {
-  switch (spiStatus) {
-    case SPI_IQRF_SPI_DISABLED:
-    case SPI_IQRF_SPI_SUSPENDED:
-    case SPI_IQRF_SPI_BUFF_PROTECT:
-    case SPI_IQRF_SPI_CRCM_ERR:
-    case SPI_IQRF_SPI_READY_COMM:
-    case SPI_IQRF_SPI_READY_PROG:
-    case SPI_IQRF_SPI_READY_DEBUG:
-    case SPI_IQRF_SPI_SLOW_MODE:
-    case SPI_IQRF_SPI_HW_ERROR:
-      return 1;
-    default:
-      return 0;
-  }
+    switch (spiStatus) {
+        case SPI_IQRF_SPI_DISABLED:
+        case SPI_IQRF_SPI_SUSPENDED:
+        case SPI_IQRF_SPI_BUFF_PROTECT:
+        case SPI_IQRF_SPI_CRCM_ERR:
+        case SPI_IQRF_SPI_READY_COMM:
+        case SPI_IQRF_SPI_READY_PROG:
+        case SPI_IQRF_SPI_READY_DEBUG:
+        case SPI_IQRF_SPI_SLOW_MODE:
+        case SPI_IQRF_SPI_HW_ERROR:
+            return 1;
+        default:
+            return 0;
+    }
 }
 
 /**
@@ -669,15 +656,15 @@ static int isSPINoDataReady(uint8_t spiStatus)
  */
 static int checkDataLen(unsigned int dataLen)
 {
-  if (dataLen <= 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (dataLen <= 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  if (dataLen > SPI_IQRF_MAX_DATA_LENGTH) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (dataLen > SPI_IQRF_MAX_DATA_LENGTH) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  return BASE_TYPES_OPER_OK;
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -690,18 +677,18 @@ static int checkDataLen(unsigned int dataLen)
 */
 int spi_iqrf_init(const char *dev)
 {
-  // Copy SPI device name
-  if (strlen(dev) > SPI_DEV_CAPACITY) {
-    return BASE_TYPES_OPER_ERROR;
-  } else {
-    strcpy(spiIqrfDefaultConfig.spiDev, dev);
-  }
+    // Copy SPI device name
+    if (strlen(dev) > SPI_DEV_CAPACITY) {
+        return BASE_TYPES_OPER_ERROR;
+    } else {
+        strcpy(spiIqrfDefaultConfig.spiDev, dev);
+    }
 
-  spiIqrfDefaultConfig.enableGpioPin = ENABLE_GPIO;
-  spiIqrfDefaultConfig.spiMasterEnGpioPin = SPI_MASTER_EN_GPIO;
-  spiIqrfDefaultConfig.spiPgmSwGpioPin = PGM_SW_GPIO;
+    spiIqrfDefaultConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
+    spiIqrfDefaultConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+    spiIqrfDefaultConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
 
-  return spi_iqrf_initAdvanced(&spiIqrfDefaultConfig);
+    return spi_iqrf_initAdvanced(&spiIqrfDefaultConfig);
 }
 
 /**
@@ -712,7 +699,7 @@ int spi_iqrf_init(const char *dev)
 */
 int spi_iqrf_initDefault()
 {
-  return spi_iqrf_init(SPI_IQRF_DEFAULT_SPI_DEVICE);
+    return spi_iqrf_init(SPI_IQRF_DEFAULT_SPI_DEVICE);
 }
 
 /**
@@ -726,34 +713,34 @@ int spi_iqrf_initDefault()
 int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 {
 
-  if (libIsInitialized == 1) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (libIsInitialized == 1) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
+    spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
-  // Initialize PGM SW pin, SPI master enable pin & power enable
-  clibspi_gpio_setup(spiIqrfConfig->spiPgmSwGpioPin, GPIO_DIRECTION_OUT, 0);
-  clibspi_gpio_setup(spiIqrfConfig->enableGpioPin, GPIO_DIRECTION_OUT, 1);
-  clibspi_gpio_setup(spiIqrfConfig->spiMasterEnGpioPin, GPIO_DIRECTION_OUT, 1);
+    // Initialize PGM SW pin, SPI master enable pin & power enable
+    clibspi_gpio_setup(spiIqrfConfig->pgmSwitchGpioPin, GPIO_DIRECTION_OUT, 0);
+    clibspi_gpio_setup(spiIqrfConfig->powerEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+    clibspi_gpio_setup(spiIqrfConfig->busEnableGpioPin, GPIO_DIRECTION_OUT, 1);
 
-  // Reset TR module
-  spi_reset_tr(1);
+    // Reset TR module
+    spi_reset_tr(1);
 
-  // Sleep for 500ms (in this time TR module waits for sequence to switch to programming mode)
-  SLEEP(500);
+    // Sleep for 500ms (in this time TR module waits for sequence to switch to programming mode)
+    SLEEP(500);
 
-  if (spi_iqrf_open() == BASE_TYPES_OPER_OK){
-    libIsInitialized = 1;
-    spi_iqrf_setCommunicationMode(SPI_IQRF_HIGH_SPEED_MODE);
-    return BASE_TYPES_OPER_OK;
-  }
-  else {
-    clibspi_gpio_cleanup(spiIqrfConfig->enableGpioPin);
-    clibspi_gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
-    clibspi_gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (spi_iqrf_open() == BASE_TYPES_OPER_OK){
+        libIsInitialized = 1;
+        spi_iqrf_setCommunicationMode(SPI_IQRF_HIGH_SPEED_MODE);
+        return BASE_TYPES_OPER_OK;
+    }
+    else {
+        clibspi_gpio_cleanup(spiIqrfConfig->powerEnableGpioPin);
+        clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
+        clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
+        return BASE_TYPES_OPER_ERROR;
+    }
 }
 
 
@@ -766,7 +753,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
 */
 spi_iqrf_CommunicationMode spi_iqrf_getCommunicationMode()
 {
-  return communicationMode;
+    return communicationMode;
 }
 
 /**
@@ -780,26 +767,26 @@ spi_iqrf_CommunicationMode spi_iqrf_getCommunicationMode()
 */
 int spi_iqrf_setCommunicationMode(spi_iqrf_CommunicationMode communication_mode)
 {
-  if (libIsInitialized == 0)
-  {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (libIsInitialized == 0)
+    {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  switch (communicationMode)
-  {
-  case SPI_IQRF_LOW_SPEED_MODE:
-    initNullTransferLowSpeed();
-    break;
-  case SPI_IQRF_HIGH_SPEED_MODE:
-    initNullTransferHighSpeed();
-    break;
-  default:
-    return BASE_TYPES_OPER_ERROR;
-  }
+    switch (communicationMode)
+    {
+        case SPI_IQRF_LOW_SPEED_MODE:
+            initNullTransferLowSpeed();
+            break;
+        case SPI_IQRF_HIGH_SPEED_MODE:
+            initNullTransferHighSpeed();
+            break;
+        default:
+            return BASE_TYPES_OPER_ERROR;
+    }
 
-  communicationMode = communication_mode;
+    communicationMode = communication_mode;
 
-  return BASE_TYPES_OPER_OK;
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -814,54 +801,54 @@ int spi_iqrf_setCommunicationMode(spi_iqrf_CommunicationMode communication_mode)
 */
 int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
 {
-  uint8_t spiCheck = SPI_IQRF_SPI_CHECK;
-  uint8_t spiResultStat = 0;
-  int checkResult;
+    uint8_t spiCheck = SPI_IQRF_SPI_CHECK;
+    uint8_t spiResultStat = 0;
+    int checkResult;
 
-  if (libIsInitialized == 0)
-  {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
-
-  if (spiStatus == NULL)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  if (fd < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStat, 1);
-  if (checkResult < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  // if checking is OK
-  if (isSPIDataReady(spiResultStat))
-  {
-    spiStatus->isDataReady = 1;
-    if (spiResultStat == 0x40)
+    if (libIsInitialized == 0)
     {
-      spiStatus->dataReady = 64;
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
     }
-    else
-    {
-      spiStatus->dataReady = spiResultStat - 0x40;
-    }
-    return BASE_TYPES_OPER_OK;
-  }
 
-  // check, if the return of SPI status is correct
-  if (isSPINoDataReady(spiResultStat))
-  {
-    spiStatus->isDataReady = 0;
-    spiStatus->dataNotReadyStatus = spiResultStat;
-    return BASE_TYPES_OPER_OK;
-  }
-  return SPI_IQRF_ERROR_BAD_STATUS;
+    if (spiStatus == NULL)
+    {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    if (fd < 0)
+    {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStat, 1);
+    if (checkResult < 0)
+    {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    // if checking is OK
+    if (isSPIDataReady(spiResultStat))
+    {
+        spiStatus->isDataReady = 1;
+        if (spiResultStat == 0x40)
+        {
+            spiStatus->dataReady = 64;
+        }
+        else
+        {
+            spiStatus->dataReady = spiResultStat - 0x40;
+        }
+        return BASE_TYPES_OPER_OK;
+    }
+
+    // check, if the return of SPI status is correct
+    if (isSPINoDataReady(spiResultStat))
+    {
+        spiStatus->isDataReady = 0;
+        spiStatus->dataNotReadyStatus = spiResultStat;
+        return BASE_TYPES_OPER_OK;
+    }
+    return SPI_IQRF_ERROR_BAD_STATUS;
 }
 
 /**
@@ -877,54 +864,54 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
 */
 int spi_iqrf_write(void *dataToWrite, unsigned int dataLen)
 {
-  uint8_t *dataToSend = NULL;
-  uint8_t ptype = 0;
-  uint8_t crcm = 0;
-  uint8_t sendResult = 0;
-  int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
+    uint8_t *dataToSend = NULL;
+    uint8_t ptype = 0;
+    uint8_t crcm = 0;
+    uint8_t sendResult = 0;
+    int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
 
-  if (libIsInitialized == 0) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (libIsInitialized == 0) {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  if (fd < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // checking input parameters
-  if (dataToWrite == NULL) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // checking input parameters
+    if (dataToWrite == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  dataLenCheckRes = checkDataLen(dataLen);
-  if (dataLenCheckRes) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    dataLenCheckRes = checkDataLen(dataLen);
+    if (dataLenCheckRes) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  dataToSend = malloc((dataLen + 3) * sizeof(uint8_t));
+    dataToSend = malloc((dataLen + 3) * sizeof(uint8_t));
 
-  // set command indication
-  dataToSend[0] = SPI_IQRF_SPI_CMD;
+    // set command indication
+    dataToSend[0] = SPI_IQRF_SPI_CMD;
 
-  // set PTYPE
-  setPTYPE(&ptype, CTYPE_BUFFER_CHANGED, dataLen);
-  dataToSend[1] = ptype;
+    // set PTYPE
+    setPTYPE(&ptype, CTYPE_BUFFER_CHANGED, dataLen);
+    dataToSend[1] = ptype;
 
-  // copy data
-  memcpy(dataToSend + 2, dataToWrite, dataLen);
+    // copy data
+    memcpy(dataToSend + 2, dataToWrite, dataLen);
 
-  // set crcm
-  crcm = getCRCM(dataToSend, dataLen);
-  dataToSend[dataLen + 2] = crcm;
+    // set crcm
+    crcm = getCRCM(dataToSend, dataLen);
+    dataToSend[dataLen + 2] = crcm;
 
-  // send data to module
-  sendResult = sendData(dataToSend, dataLen + 3);
-  free(dataToSend);
-  if (sendResult < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // send data to module
+    sendResult = sendData(dataToSend, dataLen + 3);
+    free(dataToSend);
+    if (sendResult < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
@@ -940,73 +927,73 @@ int spi_iqrf_write(void *dataToWrite, unsigned int dataLen)
 */
 int spi_iqrf_read(void *readBuffer, unsigned int dataLen)
 {
-  uint8_t *dummyData = NULL;
-  uint8_t *receiveBuffer = NULL;
-  uint8_t ptype = 0;
-  uint8_t crcm = 0;
-  uint8_t sendResult = 0;
-  int dataLenCheckRes = -1;
+    uint8_t *dummyData = NULL;
+    uint8_t *receiveBuffer = NULL;
+    uint8_t ptype = 0;
+    uint8_t crcm = 0;
+    uint8_t sendResult = 0;
+    int dataLenCheckRes = -1;
 
-  if (libIsInitialized == 0)
-  {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (libIsInitialized == 0)
+    {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  if (fd < 0)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd < 0)
+    {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // checking input parameters
-  if (readBuffer == NULL)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // checking input parameters
+    if (readBuffer == NULL)
+    {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  dataLenCheckRes = checkDataLen(dataLen);
-  if (dataLenCheckRes)
-  {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    dataLenCheckRes = checkDataLen(dataLen);
+    if (dataLenCheckRes)
+    {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  dummyData = malloc((dataLen + 3) * sizeof(uint8_t));
-  receiveBuffer = malloc((dataLen + 3) * sizeof(uint8_t));
+    dummyData = malloc((dataLen + 3) * sizeof(uint8_t));
+    receiveBuffer = malloc((dataLen + 3) * sizeof(uint8_t));
 
-  // set command indication
-  dummyData[0] = SPI_IQRF_SPI_CMD;
+    // set command indication
+    dummyData[0] = SPI_IQRF_SPI_CMD;
 
-  // set PTYPE
-  setPTYPE(&ptype, CTYPE_BUFFER_UNCHANGED, dataLen);
-  dummyData[1] = ptype;
+    // set PTYPE
+    setPTYPE(&ptype, CTYPE_BUFFER_UNCHANGED, dataLen);
+    dummyData[1] = ptype;
 
-  // dummy values
-  memset(dummyData + 2, 0, dataLen);
+    // dummy values
+    memset(dummyData + 2, 0, dataLen);
 
-  // set crcm
-  crcm = getCRCM(dummyData, dataLen);
-  dummyData[dataLen + 2] = crcm;
+    // set crcm
+    crcm = getCRCM(dummyData, dataLen);
+    dummyData[dataLen + 2] = crcm;
 
-  // send data to module
-  sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 3);
-  free(dummyData);
-  if (sendResult < 0)
-  {
+    // send data to module
+    sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 3);
+    free(dummyData);
+    if (sendResult < 0)
+    {
+        free(receiveBuffer);
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    // verify CRCS
+    if (!verifyCRCS(ptype, receiveBuffer, dataLen))
+    {
+        free(receiveBuffer);
+        return SPI_IQRF_ERROR_CRCS;
+    }
+
+    // copy received data into user buffer
+    memcpy(readBuffer, receiveBuffer + 2, dataLen);
     free(receiveBuffer);
-    return BASE_TYPES_OPER_ERROR;
-  }
 
-  // verify CRCS
-  if (!verifyCRCS(ptype, receiveBuffer, dataLen))
-  {
-    free(receiveBuffer);
-    return SPI_IQRF_ERROR_CRCS;
-  }
-
-  // copy received data into user buffer
-  memcpy(readBuffer, receiveBuffer + 2, dataLen);
-  free(receiveBuffer);
-
-  return BASE_TYPES_OPER_OK;
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -1022,75 +1009,75 @@ int spi_iqrf_read(void *readBuffer, unsigned int dataLen)
 */
 int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
 {
-  uint8_t *dummyData = NULL;
-  uint8_t *receiveBuffer = NULL;
-  uint8_t ptype = 0;
-  uint8_t crcm = 0;
-  uint8_t sendResult = 0;
-  int dataLenCheckRes = -1;
+    uint8_t *dummyData = NULL;
+    uint8_t *receiveBuffer = NULL;
+    uint8_t ptype = 0;
+    uint8_t crcm = 0;
+    uint8_t sendResult = 0;
+    int dataLenCheckRes = -1;
 
-  if (libIsInitialized == 0) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (libIsInitialized == 0) {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  if (fd < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // checking input parameters
-  if (readBuffer == NULL) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // checking input parameters
+    if (readBuffer == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  if (checkDataLen(dataLen) != BASE_TYPES_OPER_OK || dataLen < 16) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (checkDataLen(dataLen) != BASE_TYPES_OPER_OK || dataLen < 16) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  dummyData = malloc((dataLen + 4) * sizeof(uint8_t));
-  if (dummyData == NULL) {
-       return BASE_TYPES_OPER_ERROR;
-  }
+    dummyData = malloc((dataLen + 4) * sizeof(uint8_t));
+    if (dummyData == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  receiveBuffer = malloc((dataLen + 4) * sizeof(uint8_t));
-  if (receiveBuffer == NULL) {
-       free(dummyData);
-       return BASE_TYPES_OPER_ERROR;
-  }
+    receiveBuffer = malloc((dataLen + 4) * sizeof(uint8_t));
+    if (receiveBuffer == NULL) {
+        free(dummyData);
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // set command indication
-  dummyData[0] = SPI_IQRF_SPI_CMD_TR_MODULE_INFO;
+    // set command indication
+    dummyData[0] = SPI_IQRF_SPI_CMD_TR_MODULE_INFO;
 
-  // set PTYPE
-  setPTYPE(&ptype, CTYPE_BUFFER_UNCHANGED, dataLen);
-  dummyData[1] = ptype;
+    // set PTYPE
+    setPTYPE(&ptype, CTYPE_BUFFER_UNCHANGED, dataLen);
+    dummyData[1] = ptype;
 
-  // dummy values
-  memset(dummyData + 2, 0, dataLen);
+    // dummy values
+    memset(dummyData + 2, 0, dataLen);
 
-  // set crcm
-  crcm = getCRCM(dummyData, dataLen);
-  dummyData[dataLen + 2] = crcm;
-  dummyData[dataLen + 3] = 0;
+    // set crcm
+    crcm = getCRCM(dummyData, dataLen);
+    dummyData[dataLen + 2] = crcm;
+    dummyData[dataLen + 3] = 0;
 
-  // send data to module
-  sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 4);
-  free(dummyData);
-  if (sendResult < 0) {
+    // send data to module
+    sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 4);
+    free(dummyData);
+    if (sendResult < 0) {
+        free(receiveBuffer);
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    // verify CRCS
+    if (!verifyCRCS(ptype, receiveBuffer, dataLen)) {
+        free(receiveBuffer);
+        return SPI_IQRF_ERROR_CRCS;
+    }
+
+    // copy received data into user buffer
+    memcpy(readBuffer, receiveBuffer + 2, dataLen);
     free(receiveBuffer);
-    return BASE_TYPES_OPER_ERROR;
-  }
 
-  // verify CRCS
-  if (!verifyCRCS(ptype, receiveBuffer, dataLen)) {
-    free(receiveBuffer);
-    return SPI_IQRF_ERROR_CRCS;
-  }
-
-  // copy received data into user buffer
-  memcpy(readBuffer, receiveBuffer + 2, dataLen);
-  free(receiveBuffer);
-
-  return BASE_TYPES_OPER_OK;
+    return BASE_TYPES_OPER_OK;
 }
 
 static void get_eeeprom_blk_wr_addr(uint8_t *dst, const uint8_t *src)
@@ -1130,138 +1117,138 @@ static void get_eeeprom_blk_wr_addr(uint8_t *dst, const uint8_t *src)
 */
 int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int dataLen)
 {
-  uint8_t *dataToSend = NULL;
-  uint8_t *receivedData = NULL;
-  uint8_t ptype = 0;
-  uint8_t crcm = 0;
-  uint8_t sendResult = 0;
-  int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
+    uint8_t *dataToSend = NULL;
+    uint8_t *receivedData = NULL;
+    uint8_t ptype = 0;
+    uint8_t crcm = 0;
+    uint8_t sendResult = 0;
+    int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
 
-  if (libIsInitialized == 0) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (libIsInitialized == 0) {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  if (fd < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // checking input parameters
-  if (dataToWrite == NULL) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // checking input parameters
+    if (dataToWrite == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  dataLenCheckRes = checkDataLen(dataLen);
-  if (dataLenCheckRes) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    dataLenCheckRes = checkDataLen(dataLen);
+    if (dataLenCheckRes) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // Set offset for aditional data for buffer allocation
-  switch (target) {
-      case RFPMG_TARGET:
-      case RFBAND_TARGET:
-      case ACCESS_PWD_TARGET:
-      case USER_KEY_TARGET:
-          dataLen += 2;
-          break;
-      default:
-          break;
-  }
+    // Set offset for aditional data for buffer allocation
+    switch (target) {
+        case RFPMG_TARGET:
+        case RFBAND_TARGET:
+        case ACCESS_PWD_TARGET:
+        case USER_KEY_TARGET:
+            dataLen += 2;
+            break;
+        default:
+            break;
+    }
 
-  dataToSend = malloc((dataLen + 4) * sizeof(uint8_t));
-  if (dataToSend == NULL) {
-       return BASE_TYPES_OPER_ERROR;
-  }
+    dataToSend = malloc((dataLen + 4) * sizeof(uint8_t));
+    if (dataToSend == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  receivedData = malloc((dataLen + 4) * sizeof(uint8_t));
-  if (receivedData == NULL) {
-       free(dataToSend);
-       return BASE_TYPES_OPER_ERROR;
-  }
+    receivedData = malloc((dataLen + 4) * sizeof(uint8_t));
+    if (receivedData == NULL) {
+        free(dataToSend);
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // set command indication
-  switch (target) {
-      case CFG_TARGET:
-          // CFG_TARGET: is unsupported, configuration upload must be split into separate memory uploads.
-          free(receivedData);
-          free(dataToSend);
-          return BASE_TYPES_OPER_ERROR;
-          break;
-      case RFPMG_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
-          dataToSend[2] = 0xC1;
-          dataToSend[3] = 0x01;
-          dataToSend[4] = dataToWrite[0];
-          break;
-      case RFBAND_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
-          dataToSend[2] = 0xC0;
-          dataToSend[3] = 0x01;
-          dataToSend[4] = dataToWrite[0];
-          break;
-      case ACCESS_PWD_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
-          dataToSend[2] = 0xD0;
-          dataToSend[3] = 0x10;
-          // copy data
-          memcpy(dataToSend + 4, dataToWrite, dataLen);
-          break;
-      case USER_KEY_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
-          dataToSend[2] = 0xD1;
-          dataToSend[3] = 0x10;
-          // copy data
-          memcpy(dataToSend + 4, dataToWrite, dataLen);
-          break;
-      case FLASH_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_FLASH;
-          // copy data
-          memcpy(dataToSend + 2, dataToWrite, dataLen);
-          break;
-      case INTERNAL_EEPROM_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
-          // Only low 8b of address are used for addressing internal eeprom
-          dataToSend[2] = dataToWrite[0];
-          dataToSend[3] = dataLen - 2;
-          // copy data
-          memcpy(dataToSend + 4, dataToWrite + 2 , dataLen - 2);
-          break;
-      case EXTERNAL_EEPROM_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEEPROM;
-          // Get external eeprom block address from byte address
-          get_eeeprom_blk_wr_addr(&dataToSend[2],  dataToWrite);
-          // copy data
-          memcpy(dataToSend + 4, dataToWrite + 2, dataLen - 2);
-          break;
-      case SPECIAL_TARGET:
-          dataToSend[0] = SPI_IQRF_SPI_CMD_UPLOAD_IQRF;
-          // copy data
-          memcpy(dataToSend + 2, dataToWrite, dataLen);
-          break;
-      default:
-          free(receivedData);
-          free(dataToSend);
-          return BASE_TYPES_OPER_ERROR;
-          break;
-  }
+    // set command indication
+    switch (target) {
+        case CFG_TARGET:
+            // CFG_TARGET: is unsupported, configuration upload must be split into separate memory uploads.
+            free(receivedData);
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+            break;
+        case RFPMG_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
+            dataToSend[2] = 0xC1;
+            dataToSend[3] = 0x01;
+            dataToSend[4] = dataToWrite[0];
+            break;
+        case RFBAND_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
+            dataToSend[2] = 0xC0;
+            dataToSend[3] = 0x01;
+            dataToSend[4] = dataToWrite[0];
+            break;
+        case ACCESS_PWD_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
+            dataToSend[2] = 0xD0;
+            dataToSend[3] = 0x10;
+            // copy data
+            memcpy(dataToSend + 4, dataToWrite, dataLen);
+            break;
+        case USER_KEY_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
+            dataToSend[2] = 0xD1;
+            dataToSend[3] = 0x10;
+            // copy data
+            memcpy(dataToSend + 4, dataToWrite, dataLen);
+            break;
+        case FLASH_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_FLASH;
+            // copy data
+            memcpy(dataToSend + 2, dataToWrite, dataLen);
+            break;
+        case INTERNAL_EEPROM_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEPROM;
+            // Only low 8b of address are used for addressing internal eeprom
+            dataToSend[2] = dataToWrite[0];
+            dataToSend[3] = dataLen - 2;
+            // copy data
+            memcpy(dataToSend + 4, dataToWrite + 2 , dataLen - 2);
+            break;
+        case EXTERNAL_EEPROM_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_WRITE_TO_EEEPROM;
+            // Get external eeprom block address from byte address
+            get_eeeprom_blk_wr_addr(&dataToSend[2],  dataToWrite);
+            // copy data
+            memcpy(dataToSend + 4, dataToWrite + 2, dataLen - 2);
+            break;
+        case SPECIAL_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_UPLOAD_IQRF;
+            // copy data
+            memcpy(dataToSend + 2, dataToWrite, dataLen);
+            break;
+        default:
+            free(receivedData);
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+            break;
+    }
 
-  // set PTYPE
-  setPTYPE(&ptype, CTYPE_BUFFER_CHANGED, dataLen);
-  dataToSend[1] = ptype;
+    // set PTYPE
+    setPTYPE(&ptype, CTYPE_BUFFER_CHANGED, dataLen);
+    dataToSend[1] = ptype;
 
-  // set crcm
-  crcm = getCRCM(dataToSend, dataLen);
-  dataToSend[dataLen + 2] = crcm;
-  dataToSend[dataLen + 3] = 0;
+    // set crcm
+    crcm = getCRCM(dataToSend, dataLen);
+    dataToSend[dataLen + 2] = crcm;
+    dataToSend[dataLen + 3] = 0;
 
-  // send data to module
-  sendResult = sendAndReceive(dataToSend, receivedData, dataLen + 4);
+    // send data to module
+    sendResult = sendAndReceive(dataToSend, receivedData, dataLen + 4);
 
-  if (receivedData[dataLen + 3] != SPI_IQRF_SPI_BUFF_PROTECT) sendResult = SPI_IQRF_ERROR_CRCS;
-  free(receivedData);
-  free(dataToSend);
+    if (receivedData[dataLen + 3] != SPI_IQRF_SPI_BUFF_PROTECT) sendResult = SPI_IQRF_ERROR_CRCS;
+    free(receivedData);
+    free(dataToSend);
 
-  if (sendResult < 0) return sendResult;
-  return BASE_TYPES_OPER_OK;
+    if (sendResult < 0) return sendResult;
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -1288,144 +1275,144 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
 */
 int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int writeLen, unsigned char *readBuffer, unsigned int readLen)
 {
-  uint8_t *dataToSend = NULL;
-  uint8_t tmpBuffer[32];
-  uint8_t ptype = 0;
-  uint8_t crcm = 0;
-  uint8_t sendResult = 0;
-  uint64_t start;
-  int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
-  spi_iqrf_SPIStatus status;
+    uint8_t *dataToSend = NULL;
+    uint8_t tmpBuffer[32];
+    uint8_t ptype = 0;
+    uint8_t crcm = 0;
+    uint8_t sendResult = 0;
+    uint64_t start;
+    int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
+    spi_iqrf_SPIStatus status;
 
-  if (libIsInitialized == 0) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
-
-  if (fd < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  // checking input parameters
-  if (dataToWrite == NULL) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  if (target == INTERNAL_EEPROM_TARGET || target == RFPMG_TARGET || target == RFPMG_TARGET) {
-    writeLen = 2;
-  }
-
-  dataLenCheckRes = checkDataLen(writeLen);
-  if (dataLenCheckRes || readLen > 32) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  dataToSend = malloc((writeLen + 4) * sizeof(uint8_t));
-
-  if (dataToSend == NULL) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  // set command indication
-  switch (target) {
-    case CFG_TARGET:
-      // CFG_TARGET: is unsupported, configuration reading must be split into separate memory readings.
-      free(dataToSend);
-      return BASE_TYPES_OPER_ERROR;
-      break;
-    case RFPMG_TARGET:
-      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
-      dataToSend[2] = 0xC0;
-      dataToSend[3] = 0x0;
-      break;
-    case RFBAND_TARGET:
-      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
-      dataToSend[2] = 0xC0;
-      dataToSend[3] = 0x0;
-      break;
-    case ACCESS_PWD_TARGET:
-      // ACCESS_PWD_TARGET: is unsupported, access password can not be downloaded.
-      free(dataToSend);
-      return BASE_TYPES_OPER_ERROR;
-      break;
-    case USER_KEY_TARGET:
-      // USER_KEY_TARGET: is unsupported, user key can not be downloaded.
-      free(dataToSend);
-      return BASE_TYPES_OPER_ERROR;
-      break;
-    case FLASH_TARGET:
-      dataToSend[0] = SPI_IQRF_SPI_CMD_VERIFY_DATA_IN_FLASH;
-      // copy data
-      memcpy(dataToSend + 2, dataToWrite, writeLen);
-      break;
-    case INTERNAL_EEPROM_TARGET:
-      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
-      // Only low 8b of address are used for addressing internal eeprom
-      dataToSend[2] = dataToWrite[0];
-      dataToSend[3] = 0;
-      break;
-    case EXTERNAL_EEPROM_TARGET:
-      dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEEPROM;
-      // copy data
-      memcpy(dataToSend + 2, dataToWrite, writeLen);
-      break;
-    case SPECIAL_TARGET:
-      // SPECIAL_TARGET: is unsupported, special target can not be downloaded.
-      free(dataToSend);
-      return BASE_TYPES_OPER_ERROR;
-    default:
-      free(dataToSend);
-      return BASE_TYPES_OPER_ERROR;
-      break;
-  }
-
-  // set PTYPE
-  setPTYPE(&ptype, CTYPE_BUFFER_CHANGED, writeLen);
-  dataToSend[1] = ptype;
-
-  // set crcm
-  crcm = getCRCM(dataToSend, writeLen);
-  dataToSend[writeLen + 2] = crcm;
-  dataToSend[writeLen + 3] = 0;
-
-  // send data to module
-  sendResult = sendData(dataToSend, writeLen + 4);
-  free(dataToSend);
-  if (sendResult < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  status.dataReady = 0;
-  status.isDataReady = 0;
-  start = get_ms_ts();
-  while (!(status.isDataReady == 1 && status.dataReady == 32)) {
-    int retval = spi_iqrf_getSPIStatus(&status);
-    if ((retval != BASE_TYPES_OPER_OK) || (get_ms_ts()-start > 1000)) {
-      return BASE_TYPES_OPER_ERROR;
+    if (libIsInitialized == 0) {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
     }
-  }
 
-  if (spi_iqrf_read(tmpBuffer, 32) != BASE_TYPES_OPER_OK) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  switch (target) {
-    case RFPMG_TARGET:
-      readBuffer[0] = tmpBuffer[1];
-      break;
-    case RFBAND_TARGET:
-      readBuffer[0] = tmpBuffer[0];
-      break;
-    default:
-      memcpy(readBuffer, tmpBuffer, readLen);
-  }
+    // checking input parameters
+    if (dataToWrite == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  return BASE_TYPES_OPER_OK;
+    if (target == INTERNAL_EEPROM_TARGET || target == RFPMG_TARGET || target == RFPMG_TARGET) {
+        writeLen = 2;
+    }
+
+    dataLenCheckRes = checkDataLen(writeLen);
+    if (dataLenCheckRes || readLen > 32) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    dataToSend = malloc((writeLen + 4) * sizeof(uint8_t));
+
+    if (dataToSend == NULL) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    // set command indication
+    switch (target) {
+        case CFG_TARGET:
+            // CFG_TARGET: is unsupported, configuration reading must be split into separate memory readings.
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+            break;
+        case RFPMG_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
+            dataToSend[2] = 0xC0;
+            dataToSend[3] = 0x0;
+            break;
+        case RFBAND_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
+            dataToSend[2] = 0xC0;
+            dataToSend[3] = 0x0;
+            break;
+        case ACCESS_PWD_TARGET:
+            // ACCESS_PWD_TARGET: is unsupported, access password can not be downloaded.
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+            break;
+        case USER_KEY_TARGET:
+            // USER_KEY_TARGET: is unsupported, user key can not be downloaded.
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+            break;
+        case FLASH_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_VERIFY_DATA_IN_FLASH;
+            // copy data
+            memcpy(dataToSend + 2, dataToWrite, writeLen);
+            break;
+        case INTERNAL_EEPROM_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEPROM;
+            // Only low 8b of address are used for addressing internal eeprom
+            dataToSend[2] = dataToWrite[0];
+            dataToSend[3] = 0;
+            break;
+        case EXTERNAL_EEPROM_TARGET:
+            dataToSend[0] = SPI_IQRF_SPI_CMD_READ_FROM_EEEPROM;
+            // copy data
+            memcpy(dataToSend + 2, dataToWrite, writeLen);
+            break;
+        case SPECIAL_TARGET:
+            // SPECIAL_TARGET: is unsupported, special target can not be downloaded.
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+        default:
+            free(dataToSend);
+            return BASE_TYPES_OPER_ERROR;
+            break;
+    }
+
+    // set PTYPE
+    setPTYPE(&ptype, CTYPE_BUFFER_CHANGED, writeLen);
+    dataToSend[1] = ptype;
+
+    // set crcm
+    crcm = getCRCM(dataToSend, writeLen);
+    dataToSend[writeLen + 2] = crcm;
+    dataToSend[writeLen + 3] = 0;
+
+    // send data to module
+    sendResult = sendData(dataToSend, writeLen + 4);
+    free(dataToSend);
+    if (sendResult < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    status.dataReady = 0;
+    status.isDataReady = 0;
+    start = get_ms_ts();
+    while (!(status.isDataReady == 1 && status.dataReady == 32)) {
+        int retval = spi_iqrf_getSPIStatus(&status);
+        if ((retval != BASE_TYPES_OPER_OK) || (get_ms_ts()-start > 1000)) {
+            return BASE_TYPES_OPER_ERROR;
+        }
+    }
+
+    if (spi_iqrf_read(tmpBuffer, 32) != BASE_TYPES_OPER_OK) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    switch (target) {
+        case RFPMG_TARGET:
+            readBuffer[0] = tmpBuffer[1];
+            break;
+        case RFBAND_TARGET:
+            readBuffer[0] = tmpBuffer[0];
+            break;
+        default:
+            memcpy(readBuffer, tmpBuffer, readLen);
+    }
+
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
 * Reset TR. This internal function makes reset of TR module and switch power supply ON
 *
-* @param	spiMasterEnableOutState	- state of SPI_MASTER_EN_GPIO pin, after end of reset sequence
+* @param	spiMasterEnableOutState	- state of BUS_ENABLE_GPIO pin, after end of reset sequence
 *
 * @return	@c BASE_TYPES_OPER_ERROR = error occures during TR reset
 * @return	@c BASE_TYPES_OPER_OK = TR reset successfull
@@ -1433,36 +1420,36 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
 static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 {
 
-  // Disconnect SPI master from TR module
-  if (clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0) < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  SLEEP(1);
-
-  // Disable PWR for TR
-  if (clibspi_gpio_setValue(spiIqrfConfig->enableGpioPin, 0) < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  // Sleep for 300ms
-  SLEEP(300);
-
-  // Enable PWR for TR
-  if (clibspi_gpio_setValue(spiIqrfConfig->enableGpioPin, 1) < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
-
-  SLEEP(1);
-
-  if (spiMasterEnableOutState != 0){
-    // Connect SPI master to TR module
-    if (clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1) < 0) {
-      return BASE_TYPES_OPER_ERROR;
+    // Disconnect SPI master from TR module
+    if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0) < 0) {
+        return BASE_TYPES_OPER_ERROR;
     }
-  }
 
-  return BASE_TYPES_OPER_OK;
+    SLEEP(1);
+
+    // Disable PWR for TR
+    if (clibspi_gpio_setValue(spiIqrfConfig->powerEnableGpioPin, 0) < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    // Sleep for 300ms
+    SLEEP(300);
+
+    // Enable PWR for TR
+    if (clibspi_gpio_setValue(spiIqrfConfig->powerEnableGpioPin, 1) < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
+
+    SLEEP(1);
+
+    if (spiMasterEnableOutState != 0){
+        // Connect SPI master to TR module
+        if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1) < 0) {
+            return BASE_TYPES_OPER_ERROR;
+        }
+    }
+
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -1474,32 +1461,32 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 */
 int spi_iqrf_open(void)
 {
-  if (fd != NO_FILE_DESCRIPTOR) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd != NO_FILE_DESCRIPTOR) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  fd = open(spiIqrfConfig->spiDev, O_RDWR);
-  if (fd < 0) {
-    fd = NO_FILE_DESCRIPTOR;
-    return BASE_TYPES_OPER_ERROR;
-  }
+    fd = open(spiIqrfConfig->spiDev, O_RDWR);
+    if (fd < 0) {
+        fd = NO_FILE_DESCRIPTOR;
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // set SPI mode
-  if (setMode() < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // set SPI mode
+    if (setMode() < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // set bits per word
-  if (setBitsPerWord() < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // set bits per word
+    if (setBitsPerWord() < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  // set max. speed
-  if (setMaxSpeed() < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    // set max. speed
+    if (setMaxSpeed() < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  return BASE_TYPES_OPER_OK;
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -1512,24 +1499,24 @@ int spi_iqrf_open(void)
 */
 int spi_iqrf_close(void)
 {
-  int closeRes;
+    int closeRes;
 
-  if (fd == NO_FILE_DESCRIPTOR) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (fd == NO_FILE_DESCRIPTOR) {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  if (fd < 0) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (fd < 0) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  closeRes = close(fd);
-  fd = NO_FILE_DESCRIPTOR;
+    closeRes = close(fd);
+    fd = NO_FILE_DESCRIPTOR;
 
-  if (closeRes == -1) {
-    return BASE_TYPES_OPER_ERROR;
-  }
+    if (closeRes == -1) {
+        return BASE_TYPES_OPER_ERROR;
+    }
 
-  return BASE_TYPES_OPER_OK;
+    return BASE_TYPES_OPER_OK;
 }
 
 /**
@@ -1553,8 +1540,8 @@ int spi_iqrf_pe(void)
         return BASE_TYPES_OPER_OK;
     }
 
-    clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 0);
-    clibspi_gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 1);
+    clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0);
+    clibspi_gpio_setValue(spiIqrfConfig->pgmSwitchGpioPin, 1);
 
     if (spi_reset_tr(0) != BASE_TYPES_OPER_OK) {
         return BASE_TYPES_OPER_ERROR;
@@ -1563,8 +1550,8 @@ int spi_iqrf_pe(void)
     // Sleep for 500ms
     SLEEP(500);
 
-    clibspi_gpio_setValue(spiIqrfConfig->spiPgmSwGpioPin, 0);
-    clibspi_gpio_setValue(spiIqrfConfig->spiMasterEnGpioPin, 1);
+    clibspi_gpio_setValue(spiIqrfConfig->pgmSwitchGpioPin, 0);
+    clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1);
 
     // Sleep for 100ms
     SLEEP(100);
@@ -1645,20 +1632,20 @@ int spi_iqrf_pt(void)
 int spi_iqrf_destroy(void)
 {
 
-  if (libIsInitialized == 0) {
-    return BASE_TYPES_LIB_NOT_INITIALIZED;
-  }
+    if (libIsInitialized == 0) {
+        return BASE_TYPES_LIB_NOT_INITIALIZED;
+    }
 
-  // after calling this method, the behavior of the library will be
-  // like if the library was not initialized
-  libIsInitialized = 0;
+    // after calling this method, the behavior of the library will be
+    // like if the library was not initialized
+    libIsInitialized = 0;
 
-  // destroy used rpi_io library
-  clibspi_gpio_cleanup(spiIqrfConfig->enableGpioPin);
-  clibspi_gpio_cleanup(spiIqrfConfig->spiMasterEnGpioPin);
-  clibspi_gpio_cleanup(spiIqrfConfig->spiPgmSwGpioPin);
+    // destroy used rpi_io library
+    clibspi_gpio_cleanup(spiIqrfConfig->powerEnableGpioPin);
+    clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
+    clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
 
-  return spi_iqrf_close();
+    return spi_iqrf_close();
 }
 
 /* ========================================================================= */
@@ -1676,7 +1663,7 @@ int spi_iqrf_destroy(void)
 */
 static void clibspi_setup_gpio_path(const int gpio, const char *action, char *target, int len)
 {
-	snprintf(target, len, GPIO_BASE_PATH"/gpio%d/%s", gpio, action);
+    snprintf(target, len, GPIO_BASE_PATH"/gpio%d/%s", gpio, action);
 }
 
 /**
@@ -1690,18 +1677,18 @@ static void clibspi_setup_gpio_path(const int gpio, const char *action, char *ta
 */
 static int clibspi_write_data(FILE *fd, const char *buf)
 {
-	int ret = 0;
+    int ret = 0;
 
-	ret = fwrite(buf, 1, strlen(buf), fd);
-	if (ret != strlen(buf)) {
-		printf("Error during writing to file\n");
-		ret = -1;
-	}
-	else {
-		ret = 0;
-	}
+    ret = fwrite(buf, 1, strlen(buf), fd);
+    if (ret != strlen(buf)) {
+        printf("Error during writing to file\n");
+        ret = -1;
+    }
+    else {
+        ret = 0;
+    }
 
-	return ret;
+    return ret;
 }
 
 /**
@@ -1714,23 +1701,23 @@ static int clibspi_write_data(FILE *fd, const char *buf)
 */
 int clibspi_gpio_export(int num)
 {
-	FILE *fd = fopen(GPIO_EXPORT_PATH, "w");
-	char buf[5];
-	int ret;
+    FILE *fd = fopen(GPIO_EXPORT_PATH, "w");
+    char buf[5];
+    int ret;
 
-	if (!fd) {
-		printf("Error during opening file: %s\n", strerror(errno));
-		return -1;
-	}
+    if (!fd) {
+        printf("Error during opening file: %s\n", strerror(errno));
+        return -1;
+    }
 
-	snprintf(buf, sizeof(buf), "%d", num);
-	ret = clibspi_write_data(fd, buf);
-	if (ret)
-		goto err;
+    snprintf(buf, sizeof(buf), "%d", num);
+    ret = clibspi_write_data(fd, buf);
+    if (ret)
+        goto err;
 
 err:
-	fclose(fd);
-	return ret;
+    fclose(fd);
+    return ret;
 }
 
 /**
@@ -1743,23 +1730,23 @@ err:
 */
 int clibspi_gpio_unexport(int num)
 {
-	FILE *fd = fopen(GPIO_UNEXPORT_PATH, "w");
-	char buf[5];
-	int ret;
+    FILE *fd = fopen(GPIO_UNEXPORT_PATH, "w");
+    char buf[5];
+    int ret;
 
-	if (!fd) {
-		printf("Error during opening file: %s\n", strerror(errno));
-		return -1;
-	}
+    if (!fd) {
+        printf("Error during opening file: %s\n", strerror(errno));
+        return -1;
+    }
 
-	snprintf(buf, sizeof(buf), "%d", num);
-	ret = clibspi_write_data(fd, buf);
-	if (ret)
-		goto err;
+    snprintf(buf, sizeof(buf), "%d", num);
+    ret = clibspi_write_data(fd, buf);
+    if (ret)
+        goto err;
 
 err:
-	fclose(fd);
-	return ret;
+    fclose(fd);
+    return ret;
 }
 
 
@@ -1774,33 +1761,33 @@ err:
 */
 int clibspi_gpio_setDirection(int gpio, clibspi_gpio_direction dir)
 {
-	char path[50];
-	char buf[4];
-	FILE *fd = NULL;
-	int ret;
+    char path[50];
+    char buf[4];
+    FILE *fd = NULL;
+    int ret;
 
-	clibspi_setup_gpio_path(gpio, GPIO_DIRECTION_STR, path, sizeof(path));
+    clibspi_setup_gpio_path(gpio, GPIO_DIRECTION_STR, path, sizeof(path));
 
-	fd = fopen(path, "w");
+    fd = fopen(path, "w");
 
-	if (!fd) {
-		printf("Error during opening file (set direction): %s  %s\n", path, strerror(errno));
-		return -1;
-	}
-	if (dir == GPIO_DIRECTION_IN) {
-		strncpy(buf, GPIO_DIRECTION_IN_STR, sizeof(buf));
-	}
-	else if (dir == GPIO_DIRECTION_OUT) {
-		strncpy(buf, GPIO_DIRECTION_OUT_STR, sizeof(buf));
-	}
+    if (!fd) {
+        printf("Error during opening file (set direction): %s  %s\n", path, strerror(errno));
+        return -1;
+    }
+    if (dir == GPIO_DIRECTION_IN) {
+        strncpy(buf, GPIO_DIRECTION_IN_STR, sizeof(buf));
+    }
+    else if (dir == GPIO_DIRECTION_OUT) {
+        strncpy(buf, GPIO_DIRECTION_OUT_STR, sizeof(buf));
+    }
 
-	ret = clibspi_write_data(fd, buf);
-	if (ret)
-		goto err;
+    ret = clibspi_write_data(fd, buf);
+    if (ret)
+        goto err;
 
 err:
-	fclose(fd);
-	return ret;
+    fclose(fd);
+    return ret;
 }
 
 /**
@@ -1813,39 +1800,38 @@ err:
 */
 clibspi_gpio_direction clibspi_gpio_getDirection(int gpio)
 {
-	char path[50];
-	char buf[4];
-	FILE *fd = NULL;
-	int ret;
-	clibspi_gpio_direction dir;
+    char path[50];
+    char buf[4];
+    FILE *fd = NULL;
+    int ret;
+    clibspi_gpio_direction dir;
 
-	clibspi_setup_gpio_path(gpio, GPIO_DIRECTION_STR, path, sizeof(path));
+    clibspi_setup_gpio_path(gpio, GPIO_DIRECTION_STR, path, sizeof(path));
 
-	fd = fopen(path, "r");
+    fd = fopen(path, "r");
 
-	if (!fd) {
-		printf("Error during opening file (get direction): %s\n", strerror(errno));
-		return -1;
-	}
+    if (!fd) {
+        printf("Error during opening file (get direction): %s\n", strerror(errno));
+        return -1;
+    }
 
-	ret = fread(buf, 1, sizeof(buf), fd);
-	if (!ret) {
-		printf("Error during reading file\n");
-		ret = -1;
-		goto err;
-	}
+    ret = fread(buf, 1, sizeof(buf), fd);
+    if (!ret) {
+        printf("Error during reading file\n");
+        ret = -1;
+        goto err;
+    }
 
-	if (!strcmp(buf, GPIO_DIRECTION_IN_STR))
-		dir = GPIO_DIRECTION_IN;
-	else if (!strcmp(buf, GPIO_DIRECTION_OUT_STR))
-		dir = GPIO_DIRECTION_OUT;
+    if (!strcmp(buf, GPIO_DIRECTION_IN_STR))
+        dir = GPIO_DIRECTION_IN;
+    else if (!strcmp(buf, GPIO_DIRECTION_OUT_STR))
+        dir = GPIO_DIRECTION_OUT;
 
-	ret = 0;
+    ret = 0;
 
 err:
-	fclose(fd);
-	return ret;
-
+    fclose(fd);
+    return ret;
 }
 
 /**
@@ -1859,28 +1845,28 @@ err:
 */
 int clibspi_gpio_setValue(int gpio, int val)
 {
-	char path[50];
-	char buf[2];
-	FILE *fd = NULL;
-	int ret;
+    char path[50];
+    char buf[2];
+    FILE *fd = NULL;
+    int ret;
 
-	clibspi_setup_gpio_path(gpio, GPIO_VALUE_STR, path, sizeof(path));
+    clibspi_setup_gpio_path(gpio, GPIO_VALUE_STR, path, sizeof(path));
 
-	fd = fopen(path, "w");
+    fd = fopen(path, "w");
 
-	if (!fd) {
-		printf("Error during opening file: %s\n", strerror(errno));
-		return -1;
-	}
+    if (!fd) {
+        printf("Error during opening file: %s\n", strerror(errno));
+        return -1;
+    }
 
-	snprintf(buf, sizeof(buf), "%d", val);
-	ret = clibspi_write_data(fd, buf);
-	if (ret)
-		goto err;
+    snprintf(buf, sizeof(buf), "%d", val);
+    ret = clibspi_write_data(fd, buf);
+    if (ret)
+        goto err;
 
 err:
-	fclose(fd);
-	return ret;
+    fclose(fd);
+    return ret;
 }
 
 /**
@@ -1892,32 +1878,32 @@ err:
 */
 int clibspi_gpio_getValue(int gpio)
 {
-	char path[50];
-	char buf[2];
-	FILE *fd = NULL;
-	int ret;
+    char path[50];
+    char buf[2];
+    FILE *fd = NULL;
+    int ret;
 
-	clibspi_setup_gpio_path(gpio, GPIO_VALUE_STR, path, sizeof(path));
+    clibspi_setup_gpio_path(gpio, GPIO_VALUE_STR, path, sizeof(path));
 
-	fd = fopen(path, "r");
+    fd = fopen(path, "r");
 
-	if (!fd) {
-		printf("Error during opening file: %s\n", strerror(errno));
-		return -1;
-	}
+    if (!fd) {
+        printf("Error during opening file: %s\n", strerror(errno));
+        return -1;
+    }
 
-	ret = fread(buf, 1, sizeof(buf), fd);
-	if (!ret) {
-		printf("Error during reading file\n");
-		ret = -1;
-		goto err;
-	}
+    ret = fread(buf, 1, sizeof(buf), fd);
+    if (!ret) {
+        printf("Error during reading file\n");
+        ret = -1;
+        goto err;
+    }
 
-	ret = strtol(buf, NULL, 10);
+    ret = strtol(buf, NULL, 10);
 
 err:
-	fclose(fd);
-	return ret;
+    fclose(fd);
+    return ret;
 }
 
 /**
@@ -1932,33 +1918,33 @@ err:
 */
 int clibspi_gpio_setup(int gpio, clibspi_gpio_direction dir, int val)
 {
-	int ret;
+    int ret;
 
-	ret = clibspi_gpio_export(gpio);
-	if (ret)
-		return ret;
+    ret = clibspi_gpio_export(gpio);
+    if (ret)
+        return ret;
 
-	int i;
-	for (i = 1; i <= 10; i++) {
-	  ret = clibspi_gpio_setDirection(gpio, dir);
-	  if (!ret) {
-		printf("clibspi_gpio_setup() setDir success: %d\n", i);
-		break;
-	  }
-	  else {
-		printf("clibspi_gpio_setup() setDir failed wait for 100 ms to next try: %d\n", i);
-		SLEEP(100);
-	  }
-	}
+    int i;
+    for (i = 1; i <= 10; i++) {
+        ret = clibspi_gpio_setDirection(gpio, dir);
+        if (!ret) {
+            printf("clibspi_gpio_setup() setDir success: %d\n", i);
+            break;
+        }
+        else {
+            printf("clibspi_gpio_setup() setDir failed wait for 100 ms to next try: %d\n", i);
+            SLEEP(100);
+        }
+    }
 
-	// set gpio value when output clibspi_gpio_getDirection
-	if (dir == GPIO_DIRECTION_OUT) {
-		ret = clibspi_gpio_setValue(gpio, val);
-		if (ret)
-			return ret;
-	}
+    // set gpio value when output clibspi_gpio_getDirection
+    if (dir == GPIO_DIRECTION_OUT) {
+        ret = clibspi_gpio_setValue(gpio, val);
+        if (ret)
+            return ret;
+    }
 
-	return ret;
+    return ret;
 }
 
 /**
@@ -1971,5 +1957,5 @@ int clibspi_gpio_setup(int gpio, clibspi_gpio_direction dir, int val)
 */
 int clibspi_gpio_cleanup(int gpio)
 {
-	return (clibspi_gpio_unexport(gpio));
+    return (clibspi_gpio_unexport(gpio));
 }

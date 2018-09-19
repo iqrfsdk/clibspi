@@ -21,7 +21,7 @@
  * up on 'gpio' static library.
  *
  * @file		spi_iqrf.h
- * @date		11.3.2018
+ * @date		19.9.2018
  */
 
 #ifndef __SPI_IQRF_H
@@ -34,12 +34,6 @@ extern "C" {
 //#include "errors.h"
 #include "declspec.h"
 
-//#ifdef SPI_IQRF_EXPORTS
-//#define SPI_IQRF_DECLSPEC LIB_EXPORT_SHARED
-//#else
-//#define SPI_IQRF_DECLSPEC LIB_IMPORT_SHARED
-//#endif
-
 #define SPI_IQRF_DECLSPEC
 
 /** SPI device name size */
@@ -48,16 +42,16 @@ extern "C" {
 
 /** IQRF SPI Error constants. */
 typedef enum spi_iqrf_Errors {
-	///< An enum constant representing results without errors
-	BASE_TYPES_OPER_OK = 0,
-	///< An enum constant representing results where some error occures
-	BASE_TYPES_OPER_ERROR = -1,
-	///< An enum constant representing operation on not initialized library
-	BASE_TYPES_LIB_NOT_INITIALIZED = -2,
-	///< An enum constant representing bad value of SPI Status was returned from SPI device
-	SPI_IQRF_ERROR_BAD_STATUS = -10,
-	///< An enum constant representing the spi iqrf error CRCS mismatch
-	SPI_IQRF_ERROR_CRCS = -11 /**< CRCS mismatch */
+    ///< An enum constant representing results without errors
+    BASE_TYPES_OPER_OK = 0,
+    ///< An enum constant representing results where some error occures
+    BASE_TYPES_OPER_ERROR = -1,
+    ///< An enum constant representing operation on not initialized library
+    BASE_TYPES_LIB_NOT_INITIALIZED = -2,
+    ///< An enum constant representing bad value of SPI Status was returned from SPI device
+    SPI_IQRF_ERROR_BAD_STATUS = -10,
+    ///< An enum constant representing the spi iqrf error CRCS mismatch
+    SPI_IQRF_ERROR_CRCS = -11 /**< CRCS mismatch */
 } spi_iqrf_Errors;
 
 /**
@@ -65,49 +59,49 @@ typedef enum spi_iqrf_Errors {
  * different from Data Ready SPI status.
  */
 typedef enum spi_iqrf_SPIStatus_DataNotReady {
-	///< An enum constant representing thah SPI is not active (disabled by the disableSPI() command)
-	SPI_IQRF_SPI_DISABLED = 0x0,
-	///< An enum constant representing that SPI is suspended by the stopSPI() command
-	SPI_IQRF_SPI_SUSPENDED = 0x07,
-	///< An enum constant representing that SPI is not ready (buffer full, last CRCM O.K.).
-	///	Data in bufferCOM is protected against overwriting by next transmission from the master.
-	SPI_IQRF_SPI_BUFF_PROTECT = 0x3F,
-	///< An enum constant representing that SPI is not ready (buffer full, last CRCM error).
-	SPI_IQRF_SPI_CRCM_ERR = 0x3E,
-	///< An enum constant representing that SPI is ready � communication mode
-	SPI_IQRF_SPI_READY_COMM = 0x80,
-	///< An enum constant representing that SPI is ready � programming mode
-	SPI_IQRF_SPI_READY_PROG = 0x81,
-	///< An enum constant representing that SPI is ready � debugging mode
-	SPI_IQRF_SPI_READY_DEBUG = 0x82,
-	///< An enum constant representing that SPI is probably in slow communication mode
-	// TODO: Check the right meaning.
-	SPI_IQRF_SPI_SLOW_MODE = 0x83,
-	///< An enum constant representing that SPI not active (HW error)
-	SPI_IQRF_SPI_HW_ERROR = 0xFF
+    ///< An enum constant representing thah SPI is not active (disabled by the disableSPI() command)
+    SPI_IQRF_SPI_DISABLED = 0x0,
+    ///< An enum constant representing that SPI is suspended by the stopSPI() command
+    SPI_IQRF_SPI_SUSPENDED = 0x07,
+    ///< An enum constant representing that SPI is not ready (buffer full, last CRCM O.K.).
+    ///	Data in bufferCOM is protected against overwriting by next transmission from the master.
+    SPI_IQRF_SPI_BUFF_PROTECT = 0x3F,
+    ///< An enum constant representing that SPI is not ready (buffer full, last CRCM error).
+    SPI_IQRF_SPI_CRCM_ERR = 0x3E,
+    ///< An enum constant representing that SPI is ready � communication mode
+    SPI_IQRF_SPI_READY_COMM = 0x80,
+    ///< An enum constant representing that SPI is ready � programming mode
+    SPI_IQRF_SPI_READY_PROG = 0x81,
+    ///< An enum constant representing that SPI is ready � debugging mode
+    SPI_IQRF_SPI_READY_DEBUG = 0x82,
+    ///< An enum constant representing that SPI is probably in slow communication mode
+    // TODO: Check the right meaning.
+    SPI_IQRF_SPI_SLOW_MODE = 0x83,
+    ///< An enum constant representing that SPI not active (HW error)
+    SPI_IQRF_SPI_HW_ERROR = 0xFF
 } spi_iqrf_SPIStatus_DataNotReady;
 
 /**
  * Current SPI status.
  */
 typedef struct spi_iqrf_SPIStatus {
-	/** determines if dataReady field is valid. */
-	int isDataReady;
+    /** determines if dataReady field is valid. */
+    int isDataReady;
 
-	union {
-		/** Current status of SPI in case, that data is not ready. */
-		spi_iqrf_SPIStatus_DataNotReady dataNotReadyStatus;
-		/** Count of available data in case of data redady response.*/
-		int dataReady;
-	};
+    union {
+        /** Current status of SPI in case, that data is not ready. */
+        spi_iqrf_SPIStatus_DataNotReady dataNotReadyStatus;
+        /** Count of available data in case of data redady response.*/
+        int dataReady;
+    };
 } spi_iqrf_SPIStatus;
 
 /**
  * Other common constants.
  */
 typedef enum spi_iqrf_CommonConstants {
-	///< An enum consant representing maximal length of data to be write or read to or from SPI slave.
-	SPI_IQRF_MAX_DATA_LENGTH = 128
+    ///< An enum consant representing maximal length of data to be write or read to or from SPI slave.
+    SPI_IQRF_MAX_DATA_LENGTH = 128
 } spi_iqrf_CommonConstants;
 
 /**
@@ -118,24 +112,24 @@ typedef enum spi_iqrf_CommonConstants {
  */
 typedef enum _spi_iqrf_CommunicationMode
 {
-	///< An enum constant representing the low speed communication mode option
-	SPI_IQRF_LOW_SPEED_MODE,
-	///< An enum constant representing the high speed comunication mode option
-	SPI_IQRF_HIGH_SPEED_MODE
+    ///< An enum constant representing the low speed communication mode option
+    SPI_IQRF_LOW_SPEED_MODE,
+    ///< An enum constant representing the high speed comunication mode option
+    SPI_IQRF_HIGH_SPEED_MODE
 } spi_iqrf_CommunicationMode;
 
 typedef struct spi_iqrf_config_struct
 {
-  /** Device file name*/
-  char spiDev[SPI_DEV_CAPACITY+1];
-  uint8_t enableGpioPin;
-  uint8_t spiMasterEnGpioPin;
-  uint8_t spiPgmSwGpioPin;
+    /** Device file name*/
+    char spiDev[SPI_DEV_CAPACITY+1];
+    uint8_t powerEnableGpioPin;
+    uint8_t busEnableGpioPin;
+    uint8_t pgmSwitchGpioPin;
 } spi_iqrf_config_struct;
 
 /** Default SPI device. */
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
-	#define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
 #endif //SPI_IQRF_DEFAULT_SPI_DEVICE
 
 /** Programming targets */
