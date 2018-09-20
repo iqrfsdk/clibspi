@@ -82,9 +82,9 @@ int main ( int argc, char *argv[] ) {
     else {
       // initialize clibspi
       strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-      mySpiIqrfConfig.enableGpioPin = ENABLE_GPIO;
-      mySpiIqrfConfig.spiMasterEnGpioPin = SPI_MASTER_EN_GPIO;
-      mySpiIqrfConfig.spiPgmSwGpioPin = PGM_SW_GPIO;
+      mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
+      mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+      mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
 
       spi_iqrf_initAdvanced(&mySpiIqrfConfig);
 
