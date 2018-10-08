@@ -317,7 +317,7 @@ static int setBitsPerWord()
 static int setMaxSpeed()
 {
     int setResult = 0;
-    uint8_t rdSpeed = -1;
+    int rdSpeed = -1;
 
     setResult = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &SPI_MAX_SPEED);
     if (setResult < 0) {
@@ -717,7 +717,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
         return BASE_TYPES_OPER_ERROR;
     }
 
-    spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
+    memcpy(&spiIqrfDefaultConfig, configStruct, sizeof(spi_iqrf_config_struct));
 
     // Initialize PGM SW pin, SPI master enable pin & power enable
     clibspi_gpio_setup(spiIqrfConfig->pgmSwitchGpioPin, GPIO_DIRECTION_OUT, 0);
