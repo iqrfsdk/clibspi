@@ -317,7 +317,7 @@ static int setBitsPerWord()
 static int setMaxSpeed()
 {
     int setResult = 0;
-    uint8_t rdSpeed = -1;
+    int rdSpeed = -1;
 
     setResult = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &SPI_MAX_SPEED);
     if (setResult < 0) {
@@ -1014,7 +1014,9 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
     uint8_t ptype = 0;
     uint8_t crcm = 0;
     uint8_t sendResult = 0;
-    int dataLenCheckRes = -1;
+    uint8_t workDataLen = 0;
+    uint8_t osVersionMajor = 0;
+    uint8_t osVersionMinor = 0;
 
     if (libIsInitialized == 0) {
         return BASE_TYPES_LIB_NOT_INITIALIZED;
@@ -1029,16 +1031,20 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
         return BASE_TYPES_OPER_ERROR;
     }
 
-    if (checkDataLen(dataLen) != BASE_TYPES_OPER_OK || dataLen < 16) {
+    if (dataLen != 16 && dataLen != 32) {
         return BASE_TYPES_OPER_ERROR;
     }
 
-    dummyData = malloc((dataLen + 4) * sizeof(uint8_t));
+    // size of data block for basic identification
+    workDataLen = 16;
+
+    reread_idf:
+    dummyData = malloc((workDataLen + 4) * sizeof(uint8_t));
     if (dummyData == NULL) {
         return BASE_TYPES_OPER_ERROR;
     }
 
-    receiveBuffer = malloc((dataLen + 4) * sizeof(uint8_t));
+    receiveBuffer = malloc((workDataLen + 4) * sizeof(uint8_t));
     if (receiveBuffer == NULL) {
         free(dummyData);
         return BASE_TYPES_OPER_ERROR;
@@ -1048,19 +1054,19 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
     dummyData[0] = SPI_IQRF_SPI_CMD_TR_MODULE_INFO;
 
     // set PTYPE
-    setPTYPE(&ptype, CTYPE_BUFFER_UNCHANGED, dataLen);
+    setPTYPE(&ptype, CTYPE_BUFFER_UNCHANGED, workDataLen);
     dummyData[1] = ptype;
 
     // dummy values
-    memset(dummyData + 2, 0, dataLen);
+    memset(dummyData + 2, 0, workDataLen);
 
     // set crcm
-    crcm = getCRCM(dummyData, dataLen);
-    dummyData[dataLen + 2] = crcm;
-    dummyData[dataLen + 3] = 0;
+    crcm = getCRCM(dummyData, workDataLen);
+    dummyData[workDataLen + 2] = crcm;
+    dummyData[workDataLen + 3] = 0;
 
     // send data to module
-    sendResult = sendAndReceive(dummyData, receiveBuffer, dataLen + 4);
+    sendResult = sendAndReceive(dummyData, receiveBuffer, workDataLen + 4);
     free(dummyData);
     if (sendResult < 0) {
         free(receiveBuffer);
@@ -1068,14 +1074,30 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
     }
 
     // verify CRCS
-    if (!verifyCRCS(ptype, receiveBuffer, dataLen)) {
+    if (!verifyCRCS(ptype, receiveBuffer, workDataLen)) {
         free(receiveBuffer);
         return SPI_IQRF_ERROR_CRCS;
     }
 
-    // copy received data into user buffer
-    memcpy(readBuffer, receiveBuffer + 2, dataLen);
-    free(receiveBuffer);
+    if (workDataLen == 16){
+        // copy basic idf data into user buffer
+        memcpy((uint8_t *)readBuffer, receiveBuffer + 2, 16);
+        free(receiveBuffer);
+
+        if (dataLen == 32){
+            osVersionMajor = *(((uint8_t *)readBuffer) + 4) / 16;
+            osVersionMinor = *(((uint8_t *)readBuffer) + 4) % 16;
+            if ((osVersionMajor > 4) || ((osVersionMajor == 4) && (osVersionMinor >= 3))){
+                workDataLen = 32;
+                goto reread_idf;
+            }
+        }
+    }
+    else {
+        // copy extended idf data into user buffer
+        memcpy((uint8_t *)readBuffer + 16, receiveBuffer + 2 + 16, 16);
+        free(receiveBuffer);
+    }
 
     return BASE_TYPES_OPER_OK;
 }

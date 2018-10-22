@@ -21,7 +21,7 @@
  * up on 'gpio' static library.
  *
  * @file		spi_iqrf.h
- * @date		19.9.2018
+ * @date		20.10.2018
  */
 
 #ifndef __SPI_IQRF_H
