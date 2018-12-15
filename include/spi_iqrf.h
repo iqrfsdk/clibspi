@@ -44,7 +44,7 @@ extern "C" {
 typedef enum spi_iqrf_Errors {
     ///< An enum constant representing results without errors
     BASE_TYPES_OPER_OK = 0,
-    ///< An enum constant representing results where some error occures
+    ///< An enum constant representing results where some error occurs
     BASE_TYPES_OPER_ERROR = -1,
     ///< An enum constant representing operation on not initialized library
     BASE_TYPES_LIB_NOT_INITIALIZED = -2,
@@ -91,7 +91,7 @@ typedef struct spi_iqrf_SPIStatus {
     union {
         /** Current status of SPI in case, that data is not ready. */
         spi_iqrf_SPIStatus_DataNotReady dataNotReadyStatus;
-        /** Count of available data in case of data redady response.*/
+        /** Count of available data in case of data ready response.*/
         int dataReady;
     };
 } spi_iqrf_SPIStatus;
@@ -100,7 +100,7 @@ typedef struct spi_iqrf_SPIStatus {
  * Other common constants.
  */
 typedef enum spi_iqrf_CommonConstants {
-    ///< An enum consant representing maximal length of data to be write or read to or from SPI slave.
+    ///< An enum constant representing maximal length of data to be write or read to or from SPI slave.
     SPI_IQRF_MAX_DATA_LENGTH = 128
 } spi_iqrf_CommonConstants;
 
@@ -114,7 +114,7 @@ typedef enum _spi_iqrf_CommunicationMode
 {
     ///< An enum constant representing the low speed communication mode option
     SPI_IQRF_LOW_SPEED_MODE,
-    ///< An enum constant representing the high speed comunication mode option
+    ///< An enum constant representing the high speed communication mode option
     SPI_IQRF_HIGH_SPEED_MODE
 } spi_iqrf_CommunicationMode;
 
@@ -169,7 +169,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_initDefault(void);
 /**
 * Initialization of the SPI for IQRF module with advanced setting
 *
-* @param	configStruct - advaced configuration structure
+* @param	configStruct - advanced configuration structure
 *
 * @return	@c BASE_TYPES_OPER_ERROR = initialization failed
 * @return	@c BASE_TYPES_OPER_OK = initialization was correct
@@ -241,7 +241,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_read(void *readBuffer, unsigned int dataLen);
 * @param	readBuffer	- TR module info is read to this buffer
 * @param	dataLen		- length (in bytes) of the data, at least 16B
 *
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
+* @return	@c BASE_TYPES_OPER_ERROR = error occurs during read operation
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
 * @return	@c BASE_TYPES_OPER_OK = data were successfully read
@@ -263,7 +263,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int
 * @param	dataToWrite	- data to be written to SPI
 * @param	dataLen		- length (in bytes) of the data
 *
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
+* @return	@c BASE_TYPES_OPER_ERROR = error occurs during read operation
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
 * @return	@c BASE_TYPES_OPER_OK = data were successfully written
@@ -287,7 +287,7 @@ SPI_IQRF_DECLSPEC int spi_iqrf_upload(int target, const unsigned char *dataToWri
 * @param	readBuffer	- data are read to this buffer
 * @param	readLen		- length (in bytes) of the data to read
 *
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during read operation
+* @return	@c BASE_TYPES_OPER_ERROR = error occurs during read operation
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
 * @return	@c SPI_IQRF_ERROR_CRCS = mismatched CRC
 * @return	@c BASE_TYPES_OPER_OK = data were successfully read
@@ -298,9 +298,9 @@ SPI_IQRF_DECLSPEC int spi_iqrf_download(int target, const unsigned char *dataToW
 * Enter programming mode
 *
 *
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode entry
+* @return	@c BASE_TYPES_OPER_ERROR = error occurs during programming mode entry
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
-* @return	@c BASE_TYPES_OPER_OK = Programming mode entry successfull
+* @return	@c BASE_TYPES_OPER_OK = Programming mode entry successfully
 */
 SPI_IQRF_DECLSPEC int spi_iqrf_pe(void);
 
@@ -308,9 +308,9 @@ SPI_IQRF_DECLSPEC int spi_iqrf_pe(void);
 * Terminate programming mode
 *
 *
-* @return	@c BASE_TYPES_OPER_ERROR = error occures during programming mode termination
+* @return	@c BASE_TYPES_OPER_ERROR = error occurs during programming mode termination
 * @return	@c BASE_TYPES_LIB_NOT_INITIALIZED = SPI library is not initialized
-* @return	@c BASE_TYPES_OPER_OK = Programming mode termination successfull
+* @return	@c BASE_TYPES_OPER_OK = Programming mode termination successfully
 */
 
 SPI_IQRF_DECLSPEC int spi_iqrf_pt(void);

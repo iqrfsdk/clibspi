@@ -26,7 +26,6 @@
 #include "spi_iqrf.h"
 #include "sleepWrapper.h"
 
-
 /************************************/
 /* Private constants                */
 /************************************/
@@ -62,78 +61,67 @@ FILE *file = NULL;
  *
  * @return	Exit-code for the process - 0 for success, else an error code.
  */
-int main ( int argc, char *argv[] ) {
+int main ( int argc, char *argv[] )
+{
+    int OpResult;
+    int PgmRetCode;
 
-  int OpResult;
-  int PgmRetCode;
+    if ( argc != 2 ) {/* argc should be 2 for correct execution */
+        /* We print argv[0] assuming it is the program name */
+        printf( "Use *.iqrf file as input parameter.\n\r");
+    } else {
+        // We assume argv[1] is a filename to open
+        file = fopen( argv[1], "r" );
 
-  if ( argc != 2 ) {/* argc should be 2 for correct execution */
-    /* We print argv[0] assuming it is the program name */
-    printf( "Use *.iqrf file as input parameter.\n\r");
-  }
-  else {
-    // We assume argv[1] is a filename to open
-    file = fopen( argv[1], "r" );
+        /* fopen returns 0, the NULL pointer, on failure */
+        if ( file == 0 ) {
+            printf( "Could not open file\n\r" );
+        } else {
+            // initialize clibspi
+            strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+            mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
+            mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+            mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
 
-    /* fopen returns 0, the NULL pointer, on failure */
-    if ( file == 0 ) {
-      printf( "Could not open file\n\r" );
-    }
-    else {
-      // initialize clibspi
-      strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-      mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-      mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
-      mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
+            spi_iqrf_initAdvanced(&mySpiIqrfConfig);
 
-      spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+            printf("Entering programming mode.\n\r");
+            // enter programming mode
+            if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
+                printf("Programming mode OK.\n\r");
 
-      printf("Entering programming mode.\n\r");
-      // enter programming mode
-      if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
-        printf("Programming mode OK.\n\r");
+                while ((OpResult = iqrfPgmReadIQRFFileLine()) == IQRF_PGM_FILE_DATA_READY) {
+                    spiStatus = tryToWaitForPgmReady(2000);
+                    // if SPI not ready in 5000 ms, end
+                    if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
+                        printf("Waiting for ready state failed.\n\r");
+                    } else {
+                        printf("Data to write:\n\r");
+                        printDataInHex(IqrfPgmCodeLineBuffer, 20);
+                        printf("Data sent to device.\n\r");
+                        // write data to TR module
+                        PgmRetCode = spi_iqrf_upload(SPECIAL_TARGET, IqrfPgmCodeLineBuffer, 20);
+                        if (PgmRetCode != BASE_TYPES_OPER_OK)
+                            printf("Data programming failed. Return code %d\n\r", PgmRetCode);
+                        else
+                            printf("Data programming OK\n\r");
+                    }
+                }
 
-        while ((OpResult = iqrfPgmReadIQRFFileLine()) == IQRF_PGM_FILE_DATA_READY) {
-          spiStatus = tryToWaitForPgmReady(2000);
-          // if SPI not ready in 5000 ms, end
-          if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
-            printf("Waiting for ready state failed.\n\r");
-          }
-          else {
-            printf("Data to write:\n\r");
-            printDataInHex(IqrfPgmCodeLineBuffer, 20);
-            printf("Data sent to device.\n\r");
-            // write data to TR module
-            PgmRetCode = spi_iqrf_upload(SPECIAL_TARGET, IqrfPgmCodeLineBuffer, 20);
-            if (PgmRetCode != BASE_TYPES_OPER_OK) {
-              printf("Data programming failed. Return code %d\n\r", PgmRetCode);
+                spiStatus = tryToWaitForPgmReady(2000);
+
+                // terminate programming mode
+                printf("Terminating programming mode.\n\r");
+                if (spi_iqrf_pt() == BASE_TYPES_OPER_OK)
+                    printf("Programming mode termination OK.\n\r");
+                else
+                    printf("Programming mode termination ERROR.\n\r");
+            } else {
+                printf("Programming mode ERROR.\n\r");
             }
-            else {
-              printf("Data programming OK\n\r");
-            }
-
-          }
         }
-
-        spiStatus = tryToWaitForPgmReady(2000);
-
-        // terminate programming mode
-        printf("Terminating programming mode.\n\r");
-        if (spi_iqrf_pt() == BASE_TYPES_OPER_OK) {
-          printf("Programming mode termination OK.\n\r");
-        }
-        else {
-          printf("Programming mode termination ERROR.\n\r");
-        }
-
-      }
-      else {
-        printf("Programming mode ERROR.\n\r");
-      }
     }
-  }
 }
-
 
 /**
  * Try to wait for communication ready state in specified timeout (in ms).
@@ -145,80 +133,74 @@ int main ( int argc, char *argv[] ) {
 
 spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout)
 {
-  spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
-  int operResult = -1;
-  uint32_t elapsedTime = 0;
-  //struct timespec sleepValue = {0, INTERVAL_MS};
-  uint8_t buffer[64];
-  unsigned int dataLen = 0;
-  uint16_t memStatus = 0x8000;
-  uint16_t repStatCounter = 1;
+    spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
+    int operResult = -1;
+    uint32_t elapsedTime = 0;
+    //struct timespec sleepValue = {0, INTERVAL_MS};
+    uint8_t buffer[64];
+    unsigned int dataLen = 0;
+    uint16_t memStatus = 0x8000;
+    uint16_t repStatCounter = 1;
 
-  do
-  {
-    if (elapsedTime > timeout) {
-      printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
-      printf("Timeout of waiting on ready state expired\n");
-      return spiStatus;
-    }
-
-    //nanosleep(&sleepValue, NULL);
-    SLEEP(INTERVAL_MS);
-    elapsedTime += 10;
-
-    // getting slave status
-    operResult = spi_iqrf_getSPIStatus(&spiStatus);
-    if (operResult < 0) {
-      printf("Failed to get SPI status: %d \n", operResult);
-    }
-    else {
-      if (memStatus != spiStatus.dataNotReadyStatus) {
-        if (memStatus != 0x8000) {
-          printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+    do {
+        if (elapsedTime > timeout) {
+            printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
+            printf("Timeout of waiting on ready state expired\n");
+            return spiStatus;
         }
-        memStatus = spiStatus.dataNotReadyStatus;
-        repStatCounter = 1;
-      }
-      else repStatCounter++;
-    }
 
-    if (spiStatus.isDataReady == 1) {
-      // reading - only to dispose old data if any
-      spi_iqrf_read(buffer, spiStatus.dataReady);
-    }
-  } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG);
-  printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
-  return spiStatus;
+        //nanosleep(&sleepValue, NULL);
+        SLEEP(INTERVAL_MS);
+        elapsedTime += 10;
+
+        // getting slave status
+        operResult = spi_iqrf_getSPIStatus(&spiStatus);
+        if (operResult < 0) {
+            printf("Failed to get SPI status: %d \n", operResult);
+        } else {
+            if (memStatus != spiStatus.dataNotReadyStatus) {
+                if (memStatus != 0x8000)
+                    printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+                memStatus = spiStatus.dataNotReadyStatus;
+                repStatCounter = 1;
+            } else {
+                repStatCounter++;
+            }
+        }
+
+        if (spiStatus.isDataReady == 1)
+            // reading - only to dispose old data if any
+            spi_iqrf_read(buffer, spiStatus.dataReady);
+    } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG);
+
+    printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
+    return spiStatus;
 }
 
 
 /**
- * Convetr two ASCII chars tu number
+ * Convert two ASCII chars to number
  * @param dataByteHi High nibble in ASCII
  * @param dataByteLo Low nibble in ASCII
  * @return Number
  */
 uint8_t iqrfPgmConvertToNum(uint8_t dataByteHi, uint8_t dataByteLo)
 {
-  uint8_t result = 0;
+    uint8_t result = 0;
 
-  /* convert High nibble */
-  if (dataByteHi >= '0' && dataByteHi <= '9') {
-    result = (dataByteHi - '0') << 4;
-  }
-  else if (dataByteHi >= 'a' && dataByteHi <= 'f') {
-    result = (dataByteHi - 87) << 4;
-  }
+    /* convert High nibble */
+    if (dataByteHi >= '0' && dataByteHi <= '9')
+        result = (dataByteHi - '0') << 4;
+    else if (dataByteHi >= 'a' && dataByteHi <= 'f')
+        result = (dataByteHi - 87) << 4;
 
-  /* convert Low nibble */
-  if (dataByteLo >= '0' && dataByteLo <= '9') {
-    result |= (dataByteLo - '0');
-  }
-  else if (dataByteLo >= 'a' && dataByteLo <= 'f') {
-    result |= (dataByteLo - 87);
-  }
+    /* convert Low nibble */
+    if (dataByteLo >= '0' && dataByteLo <= '9')
+        result |= (dataByteLo - '0');
+    else if (dataByteLo >= 'a' && dataByteLo <= 'f')
+        result |= (dataByteLo - 87);
 
-  return(result);
+    return(result);
 }
 
 /**
@@ -227,13 +209,14 @@ uint8_t iqrfPgmConvertToNum(uint8_t dataByteHi, uint8_t dataByteLo)
  */
 char iqrfReadByteFromFile(void)
 {
-  int ReadChar;
+    int ReadChar;
 
-  ReadChar = fgetc( file );
+    ReadChar = fgetc( file );
 
-  if (ReadChar == EOF) return 0;
+    if (ReadChar == EOF)
+        return 0;
 
-  return ReadChar;
+    return ReadChar;
 }
 
 /**
@@ -252,36 +235,35 @@ repeat_read:
 
     // read one char from file
     if (FirstChar == '#') {
-      // read data to end of line
-      while (((FirstChar = iqrfReadByteFromFile()) != 0) && (FirstChar != 0x0D));
+        // read data to end of line
+        while (((FirstChar = iqrfReadByteFromFile()) != 0) && (FirstChar != 0x0D))
+            ; /* void */
     }
 
     // if end of line
     if (FirstChar == 0x0D) {
-      // read second code 0x0A
-      iqrfReadByteFromFile();
-      if (CodeLineBufferPtr == 0) {
-        // read another line
-        goto repeat_read;
-      }
-      if (CodeLineBufferPtr == 20) {
-        // line with data readed successfully
-        return(IQRF_PGM_FILE_DATA_READY);
-      }
-      else {
-        // wrong file format (error)
-        return(IQRF_PGM_FILE_DATA_ERROR);
-      }
+        // read second code 0x0A
+        iqrfReadByteFromFile();
+        if (CodeLineBufferPtr == 0)
+            // read another line
+            goto repeat_read;
+        if (CodeLineBufferPtr == 20)
+            // line with data readed successfully
+            return(IQRF_PGM_FILE_DATA_READY);
+        else
+            // wrong file format (error)
+            return(IQRF_PGM_FILE_DATA_ERROR);
     }
 
     // if end of file
-    if (FirstChar == 0) {
-      return(IQRF_PGM_END_OF_FILE);
-    }
+    if (FirstChar == 0)
+        return(IQRF_PGM_END_OF_FILE);
 
     // read second character from code file
     SecondChar = tolower(iqrfReadByteFromFile());
-    if (CodeLineBufferPtr >= 20) return(IQRF_PGM_FILE_DATA_ERROR);
+    if (CodeLineBufferPtr >= 20)
+        return(IQRF_PGM_FILE_DATA_ERROR);
+
     // convert chars to number and store to buffer
     IqrfPgmCodeLineBuffer[CodeLineBufferPtr++] = iqrfPgmConvertToNum(FirstChar, SecondChar);
     // read next data
@@ -297,14 +279,13 @@ repeat_read:
 
 void printDataInHex(unsigned char *data, unsigned int length)
 {
-  int i = 0;
+    int i = 0;
 
-  for (i = 0; i < length; i++) {
-    printf("0x%.2x", (int) *data);
-    data++;
-    if (i != (length - 1)) {
-        printf(" ");
+    for (i = 0; i < length; i++) {
+        printf("0x%.2x", (int) *data);
+        data++;
+        if (i != (length - 1))
+            printf(" ");
     }
-  }
-  printf("\n\r");
+    printf("\n\r");
 }
