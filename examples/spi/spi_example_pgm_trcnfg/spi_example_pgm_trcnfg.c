@@ -60,131 +60,115 @@ FILE *file = NULL;
  *
  * @return	Exit-code for the process - 0 for success, else an error code.
  */
-int main ( int argc, char *argv[] ) {
+int main ( int argc, char *argv[] )
+{
+    int PgmRetCode;
+    int Cnt, DataSize;
+    uint32_t CfgFileSize;
+    uint8_t *DataBuffer = NULL;
 
-  int PgmRetCode;
-  int Cnt, DataSize;
-  uint32_t CfgFileSize;
-  uint8_t *DataBuffer = NULL;
+    if ( argc != 2 ) {/* argc should be 2 for correct execution */
+        /* We print argv[0] assuming it is the program name */
+        printf( "Use *.trcnfg file as input parameter.\n\r");
+    } else {
+        // We assume argv[1] is a filename to open
+        file = fopen( argv[1], "r" );
 
-  if ( argc != 2 ) {/* argc should be 2 for correct execution */
-    /* We print argv[0] assuming it is the program name */
-    printf( "Use *.trcnfg file as input parameter.\n\r");
-  }
-  else {
-    // We assume argv[1] is a filename to open
-    file = fopen( argv[1], "r" );
+        /* fopen returns 0, the NULL pointer, on failure */
+        if ( file == 0 ) {
+            printf( "Could not open file\n\r" );
+        } else {
+            // check configuration file size
+            fseek(file, 0, SEEK_END);
+            CfgFileSize = ftell(file);
+            fseek(file, 0, SEEK_SET);
+            if (CfgFileSize < 33) {
+                printf( "Wrong format of *.trcnfg file\n\r" );
+            } else {
+                // prepare configuration data
+                FirstHalfOfCfg[0] = IQRF_CONFIG_MEM_L_ADR & 0x00FF;
+                FirstHalfOfCfg[1] = IQRF_CONFIG_MEM_L_ADR >> 8;
+                for(Cnt=0; Cnt<16; Cnt++) {
+                    FirstHalfOfCfg[Cnt*2 + 2] = fgetc(file);
+                    FirstHalfOfCfg[Cnt*2 + 3] = 0x34;
+                }
 
-    /* fopen returns 0, the NULL pointer, on failure */
-    if ( file == 0 ) {
-      printf( "Could not open file\n\r" );
+                SecondHalfOfCfg[0] = IQRF_CONFIG_MEM_H_ADR & 0x00FF;
+                SecondHalfOfCfg[1] = IQRF_CONFIG_MEM_H_ADR >> 8;;
+                for(Cnt=0; Cnt<16; Cnt++) {
+                    SecondHalfOfCfg[Cnt*2 + 2] = fgetc(file);
+                    SecondHalfOfCfg[Cnt*2 + 3] = 0x34;
+                }
+
+                RfPgmCfg = fgetc(file);
+
+                // initialize clibspi
+                strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+                mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
+                mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+                mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
+
+                spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+
+                printf("Entering programming mode.\n\r");
+                // enter programming mode
+                if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
+                    printf("Programming mode OK.\n\r");
+
+                    for (Cnt=0; Cnt<3; Cnt++) {
+                        switch(Cnt){
+                        case 0:
+                            DataBuffer = FirstHalfOfCfg;
+                            DataSize = 34;
+                            break;
+
+                        case 1:
+                            DataBuffer = SecondHalfOfCfg;
+                            DataSize = 34;
+                            break;
+
+                        case 2:
+                            DataBuffer = &RfPgmCfg;
+                            DataSize = 1;
+                            break;
+                        }
+
+                        spiStatus = tryToWaitForPgmReady(2000);
+                        // if SPI not ready in 5000 ms, end
+                        if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
+                            printf("Waiting for ready state failed.\n\r");
+                        }
+                        else {
+                            printf("Data to write:\n\r");
+                            printDataInHex(DataBuffer, DataSize);
+                            printf("Data sent to device.\n\r");
+
+                            // write data to TR module
+                            if (Cnt < 2)
+                                PgmRetCode = spi_iqrf_upload(FLASH_TARGET, DataBuffer, DataSize);
+                            else
+                                PgmRetCode = spi_iqrf_upload(RFPMG_TARGET, DataBuffer, DataSize);
+
+                            if (PgmRetCode != BASE_TYPES_OPER_OK)
+                                printf("Data programming failed. Return code %d\n\r", PgmRetCode);
+                            else
+                                printf("Data programming OK\n\r");
+                        }
+                    }
+                    spiStatus = tryToWaitForPgmReady(2000);
+
+                    // terminate programming mode
+                    printf("Terminating programming mode.\n\r");
+                    if (spi_iqrf_pt() == BASE_TYPES_OPER_OK)
+                        printf("Programming mode termination OK.\n\r");
+                    else
+                        printf("Programming mode termination ERROR.\n\r");
+                } else {
+                    printf("Programming mode ERROR.\n\r");
+                }
+            }
+        }
     }
-    else {
-      // check configuration file size
-      fseek(file, 0, SEEK_END);
-      CfgFileSize = ftell(file);
-      fseek(file, 0, SEEK_SET);
-      if (CfgFileSize < 33) {
-        printf( "Wrong format of *.trcnfg file\n\r" );
-      }
-      else {
-        // prepare configuration data
-        FirstHalfOfCfg[0] = IQRF_CONFIG_MEM_L_ADR & 0x00FF;
-        FirstHalfOfCfg[1] = IQRF_CONFIG_MEM_L_ADR >> 8;
-        for(Cnt=0; Cnt<16; Cnt++){
-          FirstHalfOfCfg[Cnt*2 + 2] = fgetc(file);
-          FirstHalfOfCfg[Cnt*2 + 3] = 0x34;
-        }
-
-        SecondHalfOfCfg[0] = IQRF_CONFIG_MEM_H_ADR & 0x00FF;
-        SecondHalfOfCfg[1] = IQRF_CONFIG_MEM_H_ADR >> 8;;
-        for(Cnt=0; Cnt<16; Cnt++){
-          SecondHalfOfCfg[Cnt*2 + 2] = fgetc(file);
-          SecondHalfOfCfg[Cnt*2 + 3] = 0x34;
-        }
-
-        RfPgmCfg = fgetc(file);
-
-        // initialize clibspi
-        strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-        mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-        mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
-        mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
-
-        spi_iqrf_initAdvanced(&mySpiIqrfConfig);
-
-        printf("Entering programming mode.\n\r");
-        // enter programming mode
-        if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
-          printf("Programming mode OK.\n\r");
-
-          for (Cnt=0; Cnt<3; Cnt++){
-            switch(Cnt){
-              case 0:{
-                DataBuffer = FirstHalfOfCfg;
-                DataSize = 34;
-              }
-              break;
-
-              case 1:{
-                DataBuffer = SecondHalfOfCfg;
-                DataSize = 34;
-              }
-              break;
-
-              case 2:{
-                DataBuffer = &RfPgmCfg;
-                DataSize = 1;
-              }
-              break;
-            }
-
-            spiStatus = tryToWaitForPgmReady(2000);
-            // if SPI not ready in 5000 ms, end
-            if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
-              printf("Waiting for ready state failed.\n\r");
-            }
-            else {
-
-              printf("Data to write:\n\r");
-              printDataInHex(DataBuffer, DataSize);
-              printf("Data sent to device.\n\r");
-
-              // write data to TR module
-              if (Cnt < 2){
-                PgmRetCode = spi_iqrf_upload(FLASH_TARGET, DataBuffer, DataSize);
-              }
-              else {
-                PgmRetCode = spi_iqrf_upload(RFPMG_TARGET, DataBuffer, DataSize);
-              }
-
-              if (PgmRetCode != BASE_TYPES_OPER_OK) {
-                printf("Data programming failed. Return code %d\n\r", PgmRetCode);
-              }
-              else {
-                printf("Data programming OK\n\r");
-              }
-            }
-          }
-
-          spiStatus = tryToWaitForPgmReady(2000);
-
-          // terminate programming mode
-          printf("Terminating programming mode.\n\r");
-          if (spi_iqrf_pt() == BASE_TYPES_OPER_OK) {
-            printf("Programming mode termination OK.\n\r");
-          }
-          else {
-            printf("Programming mode termination ERROR.\n\r");
-          }
-
-        }
-        else {
-          printf("Programming mode ERROR.\n\r");
-        }
-      }
-    }
-  }
 }
 
 
@@ -198,50 +182,48 @@ int main ( int argc, char *argv[] ) {
 
 spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout)
 {
-  spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
-  int operResult = -1;
-  uint32_t elapsedTime = 0;
-  //struct timespec sleepValue = {0, INTERVAL_MS};
-  uint8_t buffer[64];
-  unsigned int dataLen = 0;
-  uint16_t memStatus = 0x8000;
-  uint16_t repStatCounter = 1;
+    spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
+    int operResult = -1;
+    uint32_t elapsedTime = 0;
+    //struct timespec sleepValue = {0, INTERVAL_MS};
+    uint8_t buffer[64];
+    unsigned int dataLen = 0;
+    uint16_t memStatus = 0x8000;
+    uint16_t repStatCounter = 1;
 
-  do
-  {
-    if (elapsedTime > timeout) {
-      printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
-      printf("Timeout of waiting on ready state expired\n");
-      return spiStatus;
-    }
-
-    //nanosleep(&sleepValue, NULL);
-    SLEEP(INTERVAL_MS);
-    elapsedTime += 10;
-
-    // getting slave status
-    operResult = spi_iqrf_getSPIStatus(&spiStatus);
-    if (operResult < 0) {
-      printf("Failed to get SPI status: %d \n", operResult);
-    }
-    else {
-      if (memStatus != spiStatus.dataNotReadyStatus) {
-        if (memStatus != 0x8000) {
-          printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+    do {
+        if (elapsedTime > timeout) {
+            printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
+            printf("Timeout of waiting on ready state expired\n");
+            return spiStatus;
         }
-        memStatus = spiStatus.dataNotReadyStatus;
-        repStatCounter = 1;
-      }
-      else repStatCounter++;
-    }
 
-    if (spiStatus.isDataReady == 1) {
-      // reading - only to dispose old data if any
-      spi_iqrf_read(buffer, spiStatus.dataReady);
-    }
-  } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG);
-  printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
-  return spiStatus;
+        //nanosleep(&sleepValue, NULL);
+        SLEEP(INTERVAL_MS);
+        elapsedTime += 10;
+
+        // getting slave status
+        operResult = spi_iqrf_getSPIStatus(&spiStatus);
+        if (operResult < 0) {
+            printf("Failed to get SPI status: %d \n", operResult);
+        } else {
+            if (memStatus != spiStatus.dataNotReadyStatus) {
+                if (memStatus != 0x8000)
+                    printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+                memStatus = spiStatus.dataNotReadyStatus;
+                repStatCounter = 1;
+            } else {
+                repStatCounter++;
+            }
+        }
+
+        if (spiStatus.isDataReady == 1)
+            // reading - only to dispose old data if any
+            spi_iqrf_read(buffer, spiStatus.dataReady);
+    } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG);
+
+    printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
+    return spiStatus;
 }
 
 
@@ -254,14 +236,13 @@ spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout)
 
 void printDataInHex(unsigned char *data, unsigned int length)
 {
-  int i = 0;
+    int i = 0;
 
-  for (i = 0; i < length; i++) {
-    printf("0x%.2x", (int) *data);
-    data++;
-    if (i != (length - 1)) {
-        printf(" ");
+    for (i = 0; i < length; i++) {
+        printf("0x%.2x", (int) *data);
+        data++;
+        if (i != (length - 1))
+            printf(" ");
     }
-  }
-  printf("\n\r");
+    printf("\n\r");
 }

@@ -54,111 +54,107 @@ spi_iqrf_config_struct mySpiIqrfConfig;
  */
 int main ( int argc, char *argv[] )
 {
-  int OpResult;
-  uint8_t Cnt;
-  uint8_t ReadDataBuffer[32];
-  uint8_t WriteDataBuffer[8];
-  uint8_t WriteDataLen;
-  uint8_t Target;
-  uint16_t  MemAddress;
-  uint16_t  TempData;
+    int OpResult;
+    uint8_t Cnt;
+    uint8_t ReadDataBuffer[32];
+    uint8_t WriteDataBuffer[8];
+    uint8_t WriteDataLen;
+    uint8_t Target;
+    uint16_t  MemAddress;
+    uint16_t  TempData;
 
-  if ( argc != 2 ) {/* argc should be 2 for correct execution */
-    /* We print argv[0] assuming it is the program name */
-    printf( "Use -eeprom or -eeeprom of -flash as input parameter.\n\r");
-    return(-1);
-  }
+    if ( argc != 2 ) {/* argc should be 2 for correct execution */
+        /* We print argv[0] assuming it is the program name */
+        printf( "Use -eeprom or -eeeprom of -flash as input parameter.\n\r");
+        return(-1);
+    }
 
-  if (strcmp(argv[1], "-eeprom") == 0) Target = INTERNAL_EEPROM_TARGET;
-  else {
-    if (strcmp(argv[1], "-eeeprom") == 0) Target = EXTERNAL_EEPROM_TARGET;
+    if (strcmp(argv[1], "-eeprom") == 0)
+        Target = INTERNAL_EEPROM_TARGET;
+    else if (strcmp(argv[1], "-eeeprom") == 0)
+        Target = EXTERNAL_EEPROM_TARGET;
+    else if (strcmp(argv[1], "-flash") == 0)
+        Target = FLASH_TARGET;
     else {
-      if (strcmp(argv[1], "-flash") == 0) Target = FLASH_TARGET;
-      else {
         printf( "Wrong parameter.\n\r");
         return(-2);
-      }
     }
-  }
 
-  // initialize clibspi
-  strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-  mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-  mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
-  mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
+    // initialize clibspi
+    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+    mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
+    mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+    mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
 
-  spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+    spi_iqrf_initAdvanced(&mySpiIqrfConfig);
 
-  printf("Entering programming mode.\n\r");
-  // enter programming mode
-  if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
-    printf("Programming mode OK.\n\r");
+    printf("Entering programming mode.\n\r");
+    // enter programming mode
+    if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
+        printf("Programming mode OK.\n\r");
 
-    if (Target == FLASH_TARGET) MemAddress = 0x3A00;    // start address for FLASH
-    else MemAddress = 0x0000;                           // start address for internal / external EEPROM
+        if (Target == FLASH_TARGET)
+            MemAddress = 0x3A00;                            // start address for FLASH
+        else
+            MemAddress = 0x0000;                            // start address for internal / external EEPROM
 
-    for (Cnt = 0; Cnt < 8; Cnt++) {
-      // wait for TR module is ready
-      spiStatus = tryToWaitForPgmReady(2000);
-      // if SPI not ready in 2000 ms, end
-      if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
-        printf("Waiting for ready state failed.\n\r");
-      }
-      else {
-        switch (Target){
-          case INTERNAL_EEPROM_TARGET:
-            WriteDataBuffer[0] = MemAddress & 0x00FF;
-            WriteDataLen = 1;
-            printf("Reading 32 bytes of data from internal EEPROM - Address 0x%02x\n\r", MemAddress);
-            break;
+        for (Cnt = 0; Cnt < 8; Cnt++) {
+            // wait for TR module is ready
+            spiStatus = tryToWaitForPgmReady(2000);
+            // if SPI not ready in 2000 ms, end
+            if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG) {
+                printf("Waiting for ready state failed.\n\r");
+            } else {
+                switch (Target){
+                case INTERNAL_EEPROM_TARGET:
+                    WriteDataBuffer[0] = MemAddress & 0x00FF;
+                    WriteDataLen = 1;
+                    printf("Reading 32 bytes of data from internal EEPROM - Address 0x%02x\n\r", MemAddress);
+                    break;
 
-          case EXTERNAL_EEPROM_TARGET:
-            TempData = (MemAddress / 0x20) + 0x400;
-            WriteDataBuffer[0] = TempData & 0x00FF;
-            WriteDataBuffer[1] = TempData >> 8;
-            WriteDataLen = 2;
-            printf("Reading 32 bytes of data from external EEPROM - Address 0x%04x\n\r", MemAddress);
-            break;
+                case EXTERNAL_EEPROM_TARGET:
+                    TempData = (MemAddress / 0x20) + 0x400;
+                    WriteDataBuffer[0] = TempData & 0x00FF;
+                    WriteDataBuffer[1] = TempData >> 8;
+                    WriteDataLen = 2;
+                    printf("Reading 32 bytes of data from external EEPROM - Address 0x%04x\n\r", MemAddress);
+                    break;
 
-          case FLASH_TARGET:
-            WriteDataBuffer[0] = MemAddress & 0x00FF;
-            WriteDataBuffer[1] = MemAddress >> 8;
-            WriteDataLen = 2;
-            printf("Reading 32 bytes of verify data from FLASH - Address 0x%04x\n\r", MemAddress);
-            break;
+                case FLASH_TARGET:
+                    WriteDataBuffer[0] = MemAddress & 0x00FF;
+                    WriteDataBuffer[1] = MemAddress >> 8;
+                    WriteDataLen = 2;
+                    printf("Reading 32 bytes of verify data from FLASH - Address 0x%04x\n\r", MemAddress);
+                    break;
+                }
+
+                OpResult = spi_iqrf_download(Target, WriteDataBuffer, WriteDataLen, ReadDataBuffer, 32);
+
+                // check result of write operation
+                if (OpResult != BASE_TYPES_OPER_OK) {
+                    printf("Data reading error. Return code %d\n\r", OpResult);
+                } else {
+                    // print readed data
+                    printf("Data:\n\r");
+                    printDataInHex(ReadDataBuffer, 32);
+                }
+                // address for next memory block
+                MemAddress += 32;
+            }
         }
 
-        OpResult = spi_iqrf_download(Target, WriteDataBuffer, WriteDataLen, ReadDataBuffer, 32);
+        // wait for TR module is ready
+        spiStatus = tryToWaitForPgmReady(2000);
 
-        // check result of write operation
-        if (OpResult != BASE_TYPES_OPER_OK) {
-          printf("Data reading error. Return code %d\n\r", OpResult);
-        }
-        else {
-          // print readed data
-          printf("Data:\n\r");
-          printDataInHex(ReadDataBuffer, 32);
-        }
-        // address for next memory block
-        MemAddress += 32;
-      }
+        // terminate programming mode
+        printf("Terminating programming mode.\n\r");
+        if (spi_iqrf_pt() == BASE_TYPES_OPER_OK)
+            printf("Programming mode termination OK.\n\r");
+        else
+            printf("Programming mode termination ERROR.\n\r");
+    } else {
+        printf("Programming mode ERROR.\n\r");
     }
-
-    // wait for TR module is ready
-    spiStatus = tryToWaitForPgmReady(2000);
-
-    // terminate programming mode
-    printf("Terminating programming mode.\n\r");
-    if (spi_iqrf_pt() == BASE_TYPES_OPER_OK) {
-      printf("Programming mode termination OK.\n\r");
-    }
-    else {
-      printf("Programming mode termination ERROR.\n\r");
-    }
-  }
-  else {
-    printf("Programming mode ERROR.\n\r");
-  }
 }
 
 /**
@@ -170,16 +166,15 @@ int main ( int argc, char *argv[] )
 
 void printDataInHex(unsigned char *data, unsigned int length)
 {
-  int i = 0;
+    int i = 0;
 
-  for (i = 0; i < length; i++) {
-    printf("0x%.2x", (int) *data);
-    data++;
-    if (i != (length - 1)) {
-      printf(" ");
+    for (i = 0; i < length; i++) {
+        printf("0x%.2x", (int) *data);
+        data++;
+        if (i != (length - 1))
+            printf(" ");
     }
-  }
-  printf("\n\r");
+    printf("\n\r");
 }
 
 /**
@@ -192,48 +187,46 @@ void printDataInHex(unsigned char *data, unsigned int length)
 
 spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout)
 {
-  spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
-  int operResult = -1;
-  uint32_t elapsedTime = 0;
-  //struct timespec sleepValue = {0, INTERVAL_MS};
-  uint8_t buffer[64];
-  unsigned int dataLen = 0;
-  uint16_t memStatus = 0x8000;
-  uint16_t repStatCounter = 1;
+    spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
+    int operResult = -1;
+    uint32_t elapsedTime = 0;
+    //struct timespec sleepValue = {0, INTERVAL_MS};
+    uint8_t buffer[64];
+    unsigned int dataLen = 0;
+    uint16_t memStatus = 0x8000;
+    uint16_t repStatCounter = 1;
 
-  do
-  {
-    if (elapsedTime > timeout) {
-      printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
-      printf("Timeout of waiting on ready state expired\n");
-      return spiStatus;
-    }
-
-    //nanosleep(&sleepValue, NULL);
-    SLEEP(INTERVAL_MS);
-    elapsedTime += 10;
-
-    // getting slave status
-    operResult = spi_iqrf_getSPIStatus(&spiStatus);
-    if (operResult < 0) {
-      printf("Failed to get SPI status: %d \n", operResult);
-    }
-    else {
-      if (memStatus != spiStatus.dataNotReadyStatus) {
-        if (memStatus != 0x8000) {
-          printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+    do {
+        if (elapsedTime > timeout) {
+            printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
+            printf("Timeout of waiting on ready state expired\n");
+            return spiStatus;
         }
-        memStatus = spiStatus.dataNotReadyStatus;
-        repStatCounter = 1;
-      }
-      else repStatCounter++;
-    }
 
-    if (spiStatus.isDataReady == 1) {
-      // reading - only to dispose old data if any
-      spi_iqrf_read(buffer, spiStatus.dataReady);
-    }
-  } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG);
-  printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
-  return spiStatus;
+        //nanosleep(&sleepValue, NULL);
+        SLEEP(INTERVAL_MS);
+        elapsedTime += 10;
+
+        // getting slave status
+        operResult = spi_iqrf_getSPIStatus(&spiStatus);
+        if (operResult < 0) {
+            printf("Failed to get SPI status: %d \n", operResult);
+        } else {
+            if (memStatus != spiStatus.dataNotReadyStatus) {
+                if (memStatus != 0x8000)
+                    printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+                memStatus = spiStatus.dataNotReadyStatus;
+                repStatCounter = 1;
+            } else {
+                repStatCounter++;
+            }
+        }
+
+        if (spiStatus.isDataReady == 1)
+            // reading - only to dispose old data if any
+            spi_iqrf_read(buffer, spiStatus.dataReady);
+    } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_PROG);
+
+    printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
+    return spiStatus;
 }

@@ -28,11 +28,9 @@
 #include "DPA.h"
 
 /** Defines whole DPA message. */
-typedef union
-{
+typedef union {
     uint8_t Buffer[64];
-    struct
-    {
+    struct {
         uint16_t NADR;
         uint8_t PNUM;
         uint8_t PCMD;
@@ -41,8 +39,7 @@ typedef union
         uint8_t DpaValue;
         TDpaMessage DpaMessage;
     };
-    struct
-    {
+    struct {
         uint16_t NADR;
         uint8_t PNUM;
         uint8_t PCMD;
@@ -52,8 +49,7 @@ typedef union
 } T_DPA_PACKET;
 
 /** Defines an alias representing the LED colors. */
-typedef enum _LedColor_t
-{
+typedef enum _LedColor_t {
     Red,
     Green
 } LedColor_t;
@@ -116,16 +112,14 @@ int main(void)
     printf("DPA example demo application.\n\r");
 
     operResult = openCommunication();
-    if (operResult)
-    {
+    if (operResult) {
         printf("Initialization failed: %d \n", operResult);
         return operResult;
     }
 
     printf("Communication port has been successfully open ....\n\r");
 
-    for (i = 0; i < 3; ++i)
-    {
+    for (i = 0; i < 3; ++i) {
         pulseLed(COORDINATOR_ADDRESS, Green);
         //nanosleep(&delayTime, 0);
         SLEEP(TIME_BETWEEN_LEDS_MS);
@@ -149,7 +143,6 @@ int main(void)
         pulseLed(0x03, Green);
         //nanosleep(&delayTime, 0);
         SLEEP(TIME_BETWEEN_LEDS_MS);
-
     }
 
     closeCommunication();
@@ -188,8 +181,7 @@ int openCommunication(void)
     mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
 
     operResult = spi_iqrf_initAdvanced(&mySpiIqrfConfig);
-    if (operResult < 0)
-    {
+    if (operResult < 0) {
         printf("Initialization failed: %d \n", operResult);
         return operResult;
     }
@@ -207,8 +199,7 @@ int openCommunication(void)
 
 int closeCommunication(void)
 {
-    if (communicationOpen < 0)
-    {
+    if (communicationOpen < 0) {
         printf("Communication port was not open.\n");
         return -1;
     }
@@ -236,10 +227,8 @@ spi_iqrf_SPIStatus tryToWaitForReadyState(uint32_t timeout)
     uint16_t memStatus = 0x8000;
     uint16_t repStatCounter = 1;
 
-    do
-    {
-        if (elapsedTime > timeout)
-        {
+    do {
+        if (elapsedTime > timeout) {
             printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
             printf("Timeout of waiting on ready state expired\n");
             return spiStatus;
@@ -251,30 +240,25 @@ spi_iqrf_SPIStatus tryToWaitForReadyState(uint32_t timeout)
 
         // getting slave status
         operResult = spi_iqrf_getSPIStatus(&spiStatus);
-        if (operResult < 0)
-        {
+        if (operResult < 0) {
             printf("Failed to get SPI status: %d \n", operResult);
-        }
-        else
-        {
-            if (memStatus != spiStatus.dataNotReadyStatus)
-            {
-              if (memStatus != 0x8000)
-              {
-                printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
-              }
-              memStatus = spiStatus.dataNotReadyStatus;
-              repStatCounter = 1;
+        } else {
+            if (memStatus != spiStatus.dataNotReadyStatus) {
+                if (memStatus != 0x8000)
+                    printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+                memStatus = spiStatus.dataNotReadyStatus;
+                repStatCounter = 1;
+            } else {
+                repStatCounter++;
             }
-            else repStatCounter++;
         }
 
-        if (spiStatus.isDataReady == 1)
-        {
+        if (spiStatus.isDataReady == 1) {
             // reading - only to dispose old data if any
             spi_iqrf_read(buffer, spiStatus.dataReady);
         }
     } while (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_COMM);
+
     printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
     return spiStatus;
 }
@@ -295,10 +279,8 @@ spi_iqrf_SPIStatus tryToWaitForDataReadyState(uint32_t timeout)
     uint16_t memStatus = 0x8000;
     uint16_t repStatCounter = 1;
 
-    do
-    {
-        if (elapsedTime > timeout)
-        {
+    do {
+        if (elapsedTime > timeout) {
             printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
             printf("Timeout of waiting on data ready state expired\n");
             return spiStatus;
@@ -310,24 +292,20 @@ spi_iqrf_SPIStatus tryToWaitForDataReadyState(uint32_t timeout)
 
         // getting slave status
         operResult = spi_iqrf_getSPIStatus(&spiStatus);
-        if (operResult)
-        {
+        if (operResult) {
             printf("Failed to get SPI status: %d \n", operResult);
-        }
-        else
-        {
-          if (memStatus != spiStatus.dataNotReadyStatus)
-          {
-            if (memStatus != 0x8000)
-            {
-              printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+        } else {
+            if (memStatus != spiStatus.dataNotReadyStatus) {
+                if (memStatus != 0x8000)
+                    printf("Status: %d x 0x%02x \r\n", repStatCounter, memStatus);
+                memStatus = spiStatus.dataNotReadyStatus;
+                repStatCounter = 1;
+            } else {
+                repStatCounter++;
             }
-            memStatus = spiStatus.dataNotReadyStatus;
-            repStatCounter = 1;
-          }
-          else repStatCounter++;
         }
     } while (spiStatus.isDataReady != 1);
+
     printf("Status: %d x 0x%02x \r\n", repStatCounter, spiStatus.dataNotReadyStatus);
     return spiStatus;
 }
@@ -346,13 +324,9 @@ void pulseLed(uint16_t address, LedColor_t color)
     message.Request.HWPID = HWPID_DoNotCheck;
     message.Request.PCMD = CMD_LED_PULSE;
     if (color == Red)
-    {
         message.Request.PNUM = PNUM_LEDR;
-    }
     else
-    {
         message.Request.PNUM = PNUM_LEDG;
-    }
 
     executeDpaCommand((const uint8_t *)&message.Buffer, sizeof(TDpaIFaceHeader));
 }
@@ -373,50 +347,39 @@ int executeDpaCommand(const uint8_t *dpaMessage, int dataLen)
 
     // if SPI not ready in 5000 ms, end
     if (spiStatus.dataNotReadyStatus != SPI_IQRF_SPI_READY_COMM)
-    {
         printErrorAndExit("Waiting for ready state failed.\n", 0, 1);
-    }
 
     // sending some data to TR module
     int operResult = spi_iqrf_write((uint8_t *)dpaMessage, dataLen);
     if (operResult)
-    {
         printErrorAndExit("Error during data sending", 0, operResult);
-    }
     printf("Data successfully sent to SPI device.\n\r");
 
     int receiveCounter = 0;
-    do
-    {
+    do {
         spiStatus = tryToWaitForDataReadyState(5000);
 
         if (spiStatus.isDataReady != 1)
-        {
             return -1;
-        }
 
         printf("Data len: %i \n", spiStatus.dataReady);
         operResult = spi_iqrf_read(dpaResponsePacket.Buffer, spiStatus.dataReady);
         if (operResult)
-        {
             printErrorAndExit("Error during data reading", 0, operResult);
-        }
         printf("Data successfully received from IQRF module\n\r");
         printDataInHex(dpaResponsePacket.Buffer, spiStatus.dataReady);
-        if (isConfirmation(&dpaResponsePacket))
-        {
-            if (dpaResponsePacket.NADR != BROADCAST_ADDRESS)
-            {
+        if (isConfirmation(&dpaResponsePacket)) {
+            if (dpaResponsePacket.NADR != BROADCAST_ADDRESS) {
                 printf("Confirmation packet received.\n\r");
                 continue;
-            } else
-            {
+            } else {
                 printf("Confirmation for broadcast packet received.\n\r");
             }
         }
         receiveCounter++;
 
     } while (receiveCounter < 1);
+
     return 0;
 }
 
@@ -433,9 +396,7 @@ int executeDpaCommand(const uint8_t *dpaMessage, int dataLen)
 int isConfirmation(T_DPA_PACKET *msg)
 {
     if (msg == NULL)
-    {
         return -1;
-    }
 
     if ((TErrorCodes) msg->ResponseCode == STATUS_CONFIRMATION)
         return 1;
@@ -453,14 +414,11 @@ void printDataInHex(unsigned char *data, unsigned int length)
 {
     int i = 0;
 
-    for (i = 0; i < length; i++)
-    {
+    for (i = 0; i < length; i++) {
         printf("0x%.2x", (int) *data);
         data++;
         if (i != (length - 1))
-        {
             printf(" ");
-        }
     }
     printf("\n\r");
 }

@@ -18,7 +18,7 @@
 #define __ERRORS_H_
 
 /**
- * Library, which encapsulates informations about various errors, which can occur during
+ * Library, which encapsulates information about various errors, which can occur during
  * user operations.
  *
  * @file		errors.h
@@ -31,7 +31,7 @@
  */
 typedef struct errors_OperError {
     int errorCode; /**< error code */
-    int isSystemErrorCode; /**< indicates, wheather the error code designates system error code */
+    int isSystemErrorCode; /**< indicates, whether the error code designates system error code */
     char* descr; /**< description of the error */
 } errors_OperError;
 
