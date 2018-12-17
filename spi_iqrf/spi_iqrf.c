@@ -667,6 +667,7 @@ int spi_iqrf_init(const char *dev)
     spiIqrfDefaultConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
     spiIqrfDefaultConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
     spiIqrfDefaultConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
+    spiIqrfDefaultConfig.trModuleReset = TR_MODULE_RESET_ENABLE;
 
     return spi_iqrf_initAdvanced(&spiIqrfDefaultConfig);
 }
@@ -703,7 +704,8 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     clibspi_gpio_setup(spiIqrfConfig->busEnableGpioPin, GPIO_DIRECTION_OUT, 1);
 
     // Reset TR module
-    spi_reset_tr(1);
+    if (spiIqrfConfig->trModuleReset == TR_MODULE_RESET_ENABLE)
+        spi_reset_tr(1);
 
     // Sleep for 500ms (in this time TR module waits for sequence to switch to programming mode)
     SLEEP(500);
