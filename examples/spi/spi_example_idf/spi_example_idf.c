@@ -57,6 +57,7 @@ int main(void)
     mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
     mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
     mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
+    mySpiIqrfConfig.trModuleReset = TR_MODULE_RESET_ENABLE;
 
     spi_iqrf_initAdvanced(&mySpiIqrfConfig);
 

@@ -118,13 +118,20 @@ typedef enum _spi_iqrf_CommunicationMode
     SPI_IQRF_HIGH_SPEED_MODE
 } spi_iqrf_CommunicationMode;
 
+typedef enum _tr_module_reset
+{
+    TR_MODULE_RESET_ENABLE = 0,
+    TR_MODULE_RESET_DISABLE
+} tr_module_reset;
+
 typedef struct spi_iqrf_config_struct
 {
     /** Device file name*/
-    char spiDev[SPI_DEV_CAPACITY+1];
-    uint8_t powerEnableGpioPin;
-    uint8_t busEnableGpioPin;
-    uint8_t pgmSwitchGpioPin;
+    char spiDev[SPI_DEV_CAPACITY+1];// system path to SPI device
+    uint8_t powerEnableGpioPin;     // GPIO to enable power supply to TR module
+    uint8_t busEnableGpioPin;       // GPIO to enable function of SPI bus
+    uint8_t pgmSwitchGpioPin;       // GPIO to switch TR module to PGM mode
+    tr_module_reset trModuleReset;  // enable / disable TR module reset during library initialization
 } spi_iqrf_config_struct;
 
 /** Default SPI device. */
