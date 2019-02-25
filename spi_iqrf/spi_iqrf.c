@@ -148,13 +148,6 @@ static const uint8_t CS_DEVICE_STAY_SELECTED = 1;
 /** Delay between 2 consecutive bytes. T2 period */
 static const struct timespec T2_DELAY = { .tv_sec = 0, .tv_nsec = 800000 };
 
-/**
- * how long to wait [microseconds] after the last bit transfer and
- * before optionally deselecting the device before next transfer of
- * T1 period
- */
-static const uint16_t DELAY_AFTER_TRANSFER = 10;
-
 /** SPI checking packet indication. */
 static const uint8_t SPI_IQRF_SPI_CHECK = 0x00;
 
@@ -177,6 +170,8 @@ typedef enum _spi_iqrf_SPICtype {
 
 /** Values that represent GPIO directions. */
 typedef enum _clibspi_gpio_direction {
+    ///< An enum constant representing not available GPIO direction
+    GPIO_DIRECTION_NOT_AVAILABLE = -1,
     ///< An enum constant representing GPIO input
     GPIO_DIRECTION_IN = 0,
     ///< An enum constant representing GPIO output
@@ -378,7 +373,7 @@ static int sendAndReceive(void *dataToSend, void *recvBuffer, unsigned int len)
 static int sendAndReceiveLowSpeed(void *dataToSend, void *recvBuffer, unsigned int len)
 {
     int result = 0;
-    int trans_id = 0;
+    unsigned int trans_id = 0;
     uint8_t* tx = NULL;
     uint8_t* rx = NULL;
     struct spi_ioc_transfer completeTransfer[2];
@@ -441,7 +436,7 @@ end:
 static int sendAndReceiveHighSpeed(void *dataToSend, void *recvBuffer, unsigned int len)
 {
     int result = 0;
-    int trans_id = 0;
+    unsigned int trans_id = 0;
     uint8_t *tx = NULL;
     uint8_t *rx = NULL;
     struct spi_ioc_transfer completeTransfer[2];
@@ -829,7 +824,7 @@ int spi_iqrf_write(void *dataToWrite, unsigned int dataLen)
     uint8_t *dataToSend = NULL;
     uint8_t ptype = 0;
     uint8_t crcm = 0;
-    uint8_t sendResult = 0;
+    int sendResult = 0;
     int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
 
     if (libIsInitialized == 0)
@@ -888,7 +883,7 @@ int spi_iqrf_read(void *readBuffer, unsigned int dataLen)
     uint8_t *receiveBuffer = NULL;
     uint8_t ptype = 0;
     uint8_t crcm = 0;
-    uint8_t sendResult = 0;
+    int sendResult = 0;
     int dataLenCheckRes = -1;
 
     if (libIsInitialized == 0)
@@ -960,10 +955,10 @@ int spi_iqrf_get_tr_module_info(void *readBuffer, unsigned int dataLen)
     uint8_t *receiveBuffer = NULL;
     uint8_t ptype = 0;
     uint8_t crcm = 0;
-    uint8_t sendResult = 0;
     uint8_t workDataLen = 0;
     uint8_t osVersionMajor = 0;
     uint8_t osVersionMinor = 0;
+    int sendResult = 0;
 
     if (libIsInitialized == 0)
         return BASE_TYPES_LIB_NOT_INITIALIZED;
@@ -1048,7 +1043,7 @@ static void get_eeeprom_blk_wr_addr(uint8_t *dst, const uint8_t *src)
     uint16_t val = 0;
 
     val = src[1];
-    val << 8;
+    val <<= 8;
     val += src[0];
 
     val = (val - 0x0200) / 0x20;
@@ -1084,7 +1079,7 @@ int spi_iqrf_upload(int target, const unsigned char *dataToWrite, unsigned int d
     uint8_t *receivedData = NULL;
     uint8_t ptype = 0;
     uint8_t crcm = 0;
-    uint8_t sendResult = 0;
+    int sendResult = 0;
     int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
 
     if (libIsInitialized == 0)
@@ -1240,9 +1235,9 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
     uint8_t tmpBuffer[32];
     uint8_t ptype = 0;
     uint8_t crcm = 0;
-    uint8_t sendResult = 0;
     uint64_t start;
     int dataLenCheckRes = BASE_TYPES_OPER_ERROR;
+    int sendResult = 0;
     spi_iqrf_SPIStatus status;
 
     if (libIsInitialized == 0)
@@ -1608,7 +1603,7 @@ static int clibspi_write_data(FILE *fd, const char *buf)
     int ret = 0;
 
     ret = fwrite(buf, 1, strlen(buf), fd);
-    if (ret != strlen(buf)) {
+    if (ret != (int)strlen(buf)) {
         printf("Error during writing to file\n");
         ret = -1;
     } else {
@@ -1737,13 +1732,14 @@ clibspi_gpio_direction clibspi_gpio_getDirection(int gpio)
 
     if (!fd) {
         printf("Error during opening file (get direction): %s\n", strerror(errno));
-        return -1;
+        return GPIO_DIRECTION_NOT_AVAILABLE;
     }
+
+    dir = GPIO_DIRECTION_NOT_AVAILABLE;
 
     ret = fread(buf, 1, sizeof(buf), fd);
     if (!ret) {
         printf("Error during reading file\n");
-        ret = -1;
         goto err;
     }
 
@@ -1752,11 +1748,9 @@ clibspi_gpio_direction clibspi_gpio_getDirection(int gpio)
     else if (!strcmp(buf, GPIO_DIRECTION_OUT_STR))
         dir = GPIO_DIRECTION_OUT;
 
-    ret = 0;
-
 err:
     fclose(fd);
-    return ret;
+    return dir;
 }
 
 /**
