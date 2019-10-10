@@ -23,7 +23,7 @@
 // #define UP
 // #define UP2
 // #define OPIZ
-
+// #define AXON
 
 #ifdef RPI
 
@@ -87,5 +87,21 @@
 #endif
 
 #endif /* OPI */
+
+
+#ifdef AXON
+
+/** PGM Switch GPIO. */
+#define PGM_SWITCH_GPIO (2)
+/** Bus enable GPIO. */
+#define BUS_ENABLE_GPIO (18)
+/** Power enable GPIO. */
+#define POWER_ENABLE_GPIO (19)
+
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.3"
+#endif
+
+#endif /* UNIPI AXON */
 
 #endif /* __MACHINES_DEF_H */
