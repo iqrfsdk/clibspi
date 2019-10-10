@@ -183,7 +183,7 @@ void decodeIdfData(unsigned char *data, unsigned int sizeOfData)
     tempString[tempStringPtr++] = 0;
     strcat(tempString, "\n\r");
     printf("Module type:       ");
-    printf(tempString);
+    printf("%s", tempString);
 
     // print module MCU
     printf("Module MCU:        ");
