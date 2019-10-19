@@ -1,4 +1,7 @@
-include_directories(${CMAKE_SOURCE_DIR}/examples)
-
-add_subdirectory(spi)
+add_subdirectory(spi_example_dpa)
+add_subdirectory(spi_example_idf)
+add_subdirectory(spi_example_pgm_iqrf)
+add_subdirectory(spi_example_pgm_trcnfg)
+add_subdirectory(spi_example_pgm_hex)
+add_subdirectory(spi_example_readmem)
 
