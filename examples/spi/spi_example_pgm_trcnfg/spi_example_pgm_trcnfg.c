@@ -183,12 +183,11 @@ int main ( int argc, char *argv[] )
 
 spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout)
 {
-    spi_iqrf_SPIStatus spiStatus = {0, SPI_IQRF_SPI_DISABLED};
+    spi_iqrf_SPIStatus spiStatus = {0, {SPI_IQRF_SPI_DISABLED}};
     int operResult = -1;
     uint32_t elapsedTime = 0;
     //struct timespec sleepValue = {0, INTERVAL_MS};
     uint8_t buffer[64];
-    unsigned int dataLen = 0;
     uint16_t memStatus = 0x8000;
     uint16_t repStatCounter = 1;
 
@@ -237,13 +236,14 @@ spi_iqrf_SPIStatus tryToWaitForPgmReady(uint32_t timeout)
 
 void printDataInHex(unsigned char *data, unsigned int length)
 {
-    int i = 0;
+    unsigned int i = 0;
 
     for (i = 0; i < length; i++) {
         printf("0x%.2x", (int) *data);
         data++;
-        if (i != (length - 1))
-            printf(" ");
+        if (i != (length - 1)) {
+	        printf(" ");
+        }
     }
     printf("\n\r");
 }

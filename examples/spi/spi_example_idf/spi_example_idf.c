@@ -119,7 +119,7 @@ void decodeIdfData(unsigned char *data, unsigned int sizeOfData)
     uint8_t moduleType;
     uint8_t mcuType;
     uint8_t fccCerificate;
-    uint8_t tempString[32];
+    char tempString[32];
     uint8_t tempStringPtr = 0;
     uint8_t cnt;
 
