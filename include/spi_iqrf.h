@@ -88,6 +88,8 @@ typedef struct spi_iqrf_SPIStatus {
     /** determines if dataReady field is valid. */
     int isDataReady;
 
+    int spiResultStat;
+
     union {
         /** Current status of SPI in case, that data is not ready. */
         spi_iqrf_SPIStatus_DataNotReady dataNotReadyStatus;

@@ -789,6 +789,8 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
     if (checkResult < 0)
         return BASE_TYPES_OPER_ERROR;
 
+    spiStatus->spiResultStat = spiResultStat;
+
     // if checking is OK
     if (isSPIDataReady(spiResultStat)) {
         spiStatus->isDataReady = 1;
