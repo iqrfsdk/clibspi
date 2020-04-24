@@ -774,6 +774,8 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
 {
     uint8_t spiCheck = SPI_IQRF_SPI_CHECK;
     uint8_t spiResultStat = 0;
+    uint8_t spiResultStatFirst = 0;
+    uint8_t spiResultStatSecond = 0;
     int checkResult;
 
     if (libIsInitialized == 0)
@@ -785,9 +787,19 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
     if (fd < 0)
         return BASE_TYPES_OPER_ERROR;
 
-    checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStat, 1);
-    if (checkResult < 0)
-        return BASE_TYPES_OPER_ERROR;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 2; j++) {
+            checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStatFirst, 1);
+            checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStatSecond, 1);
+            if (checkResult < 0)
+                return BASE_TYPES_OPER_ERROR;
+        }
+        if (spiResultStatFirst == spiResultStatSecond) {    
+            spiResultStat = spiResultStatSecond;
+            break;
+        }
+        spiResultStat = spiResultStatSecond;
+    }
 
     // if checking is OK
     if (isSPIDataReady(spiResultStat)) {
@@ -805,6 +817,7 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
         spiStatus->dataNotReadyStatus = spiResultStat;
         return BASE_TYPES_OPER_OK;
     }
+    
     return SPI_IQRF_ERROR_BAD_STATUS;
 }
 
