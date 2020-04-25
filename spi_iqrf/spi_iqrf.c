@@ -772,6 +772,7 @@ int spi_iqrf_setCommunicationMode(spi_iqrf_CommunicationMode communication_mode)
 */
 int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
 {
+    int retval = BASE_TYPES_OPER_ERROR;
     uint8_t spiCheck = SPI_IQRF_SPI_CHECK;
     uint8_t spiResultStat = 0;
     uint8_t spiResultStatFirst = 0;
@@ -787,18 +788,28 @@ int spi_iqrf_getSPIStatus(spi_iqrf_SPIStatus *spiStatus)
     if (fd < 0)
         return BASE_TYPES_OPER_ERROR;
 
+    // try more times
     for (int i = 0; i < 3; i++) {
+        // more reads to get synced SPI status
         for (int j = 0; j < 2; j++) {
-            checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStatFirst, 1);
-            checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStatSecond, 1);
-            if (checkResult < 0)
-                return BASE_TYPES_OPER_ERROR;
+          sendAndReceive((void *)&spiCheck, (void *)&spiResultStatFirst, 1);
         }
-        if (spiResultStatFirst == spiResultStatSecond) {    
-            spiResultStat = spiResultStatSecond;
-            break;
+        checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStatFirst, 1);
+        if (checkResult < 0)
+          continue;
+        checkResult = sendAndReceive((void *)&spiCheck, (void *)&spiResultStatSecond, 1);
+        if (checkResult < 0)
+          continue;
+
+        if (spiResultStatFirst == spiResultStatSecond) {
+          spiResultStat = spiResultStatSecond;
+          retval = BASE_TYPES_OPER_OK;
+          break;
         }
-        spiResultStat = spiResultStatSecond;
+    }
+
+    if (BASE_TYPES_OPER_ERROR == retval) {
+        return retval;
     }
 
     spiStatus->spiResultStat = spiResultStat;
