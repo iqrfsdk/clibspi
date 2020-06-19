@@ -1,59 +1,34 @@
 /*
-* Copyright 2015 MICRORISC s.r.o.
-* Copyright 2018 IQRF Tech s.r.o.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2015 MICRORISC s.r.o.
+ * Copyright 2018 IQRF Tech s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <time.h>
-//#include <linux/types.h>
-#include "machines_def.h"
-#include "spi_iqrf.h"
-#include "sleepWrapper.h"
-
-
-/************************************/
-/* Private constants                */
-/************************************/
-
-/************************************/
-/* Private functions predeclaration */
-/************************************/
-void decodeIdfData(unsigned char *data, unsigned int sizeOfData);
-
-/************************************/
-/* Private variables                */
-/** SPI IQRF configuration structure */
-spi_iqrf_config_struct mySpiIqrfConfig;
+#include "spi_example_idf.h"
 
 /**
  * Main entry-point for this application.
- *
- * @return	Exit-code for the process - 0 for success, else an error code.
+ * @return Exit-code for the process - 0 for success, else an error code.
  */
-
-int main(void)
-{
+int main(void) {
+    spi_iqrf_config_struct mySpiIqrfConfig;
     uint8_t idfBuffer[32];
     uint8_t idfResult;
 
-    printf("TR module identification demo application.\n\r");
+    puts("TR module identification demo application.");
 
-    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+    strcpy(mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
     mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
     mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
     mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
@@ -61,172 +36,130 @@ int main(void)
 
     spi_iqrf_initAdvanced(&mySpiIqrfConfig);
 
-    printf("Entering programming mode.\n\r");
+    puts("Entering programming mode.");
 
-    if (spi_iqrf_pe() == BASE_TYPES_OPER_OK) {
-        printf("Programming mode OK.\n\r");
+    if (spi_iqrf_pe() != BASE_TYPES_OPER_OK) {
+        puts("Programming mode ERROR.");
+        return EXIT_FAILURE;
+    }
+    puts("Programming mode OK.");
 
-        printf("Reading TR module identification.\n\r");
-        idfResult = spi_iqrf_get_tr_module_info(idfBuffer, sizeof(idfBuffer));
-        if (idfResult == BASE_TYPES_OPER_OK)
-            decodeIdfData(idfBuffer, sizeof(idfBuffer));
-        else
-            printf("\n\rTR module identification ERROR.\n\r\n\r");
-
-        printf("Terminating programming mode.\n\r");
-        if (spi_iqrf_pt() == BASE_TYPES_OPER_OK)
-            printf("Programming mode termination OK.\n\r");
-        else
-            printf("Programming mode termination ERROR.\n\r");
+    puts("Reading TR module identification.");
+    idfResult = spi_iqrf_get_tr_module_info(idfBuffer, sizeof(idfBuffer));
+    if (idfResult == BASE_TYPES_OPER_OK) {
+        decodeIdfData(idfBuffer, sizeof(idfBuffer));
     } else {
-        printf("Programming mode ERROR.\n\r");
+        printf("\nTR module identification ERROR.\n\n");
     }
 
-    return 0;
+    puts("Terminating programming mode.");
+    if (spi_iqrf_pt() == BASE_TYPES_OPER_OK) {
+        puts("Programming mode termination OK.");
+    } else {
+        puts("Programming mode termination ERROR.");
+    }
+    return EXIT_SUCCESS;
 }
 
-/**
- * Decode and print TR module identification data
- *
- * @param [in]	data	Pointer to data buffer with identification data
- */
-void decodeIdfData(unsigned char *data, unsigned int sizeOfData)
-{
-    // MCU type of TR module
-    #define MCU_UNKNOWN                   0
-    #define PIC16LF819                    1     // TR-xxx-11A not supported
-    #define PIC16LF88                     2     // TR-xxx-21A
-    #define PIC16F886                     3     // TR-31B, TR-52B, TR-53B
-    #define PIC16LF1938                   4     // TR-52D, TR-54D
-
-    // TR module types
-    #define TR_52D                        0
-    #define TR_58D_RJ                     1
-    #define TR_72D                        2
-    #define TR_53D                        3
-    #define TR_54D                        8
-    #define TR_55D                        9
-    #define TR_56D                        10
-    #define TR_76D                        11
-
-    // FCC cerificate
-    #define FCC_NOT_CERTIFIED             0
-    #define FCC_CERTIFIED                 1
-
-    uint32_t moduleId;
-    uint16_t osBuild;
-    uint8_t osVersionMajor, osVersionMinor;
-    uint8_t moduleType;
-    uint8_t mcuType;
-    uint8_t fccCerificate;
-    char tempString[32];
-    uint8_t tempStringPtr = 0;
-    uint8_t cnt;
-
-    printf("\n\rTR module identification data.\n\r");
-    printf("------------------------------\n\r");
-
+void decodeIdfData(unsigned char *data, unsigned int size) {
+    printf("\nTR module identification data.\n");
+    printf("------------------------------\n");
+    char tempString[32] = "";
     // decode identification data
-    moduleId = (uint32_t)data[3] << 24 | (uint32_t)data[2] << 16 | (uint32_t)data[1] << 8 | data[0];
-    moduleType = data[5] >> 4;
-    mcuType = data[5] & 0x07;
-    fccCerificate = (data[5] & 0x08) >> 3;
-    osVersionMajor = data[4] / 16;
-    osVersionMinor = data[4] % 16;
-    osBuild = (uint16_t)data[7] << 8 | data[6];
+    uint32_t moduleId = (uint32_t) data[3] << 24 | (uint32_t) data[2] << 16 | (uint32_t) data[1] << 8 | data[0];
+    trType_t moduleType = data[5] >> 4;
+    mcuType_t mcuType = data[5] & 0x07;
+    fccCert_t fccCertified = (data[5] & 0x08) >> 3;
+    uint16_t osVersion = data[4];
+    uint16_t osBuild = (uint16_t) data[7] << 8 | data[6];
 
     // print module Type
     if (moduleId & 0x80000000L) {
-        tempString[tempStringPtr++] = 'D';
-        tempString[tempStringPtr++] = 'C';
+        strcat(tempString, "(DC)");
     }
-    tempString[tempStringPtr++] = 'T';
-    tempString[tempStringPtr++] = 'R';
-    tempString[tempStringPtr++] = '-';
-    tempString[tempStringPtr++] = '5';
+    strcat(tempString, "TR-");
 
-    switch(moduleType) {
-    case TR_52D:
-        tempString[tempStringPtr++] = '2';
-        break;
-    case TR_58D_RJ:
-        tempString[tempStringPtr++] = '8';
-        break;
-    case TR_72D:
-        tempString[tempStringPtr-1] = '7';
-        tempString[tempStringPtr++] = '2';
-        break;
-    case TR_53D:
-        tempString[tempStringPtr++] = '3';
-        break;
-    case TR_54D:
-        tempString[tempStringPtr++] = '4';
-        break;
-    case TR_55D:
-        tempString[tempStringPtr++] = '5';
-        break;
-    case TR_56D:
-        tempString[tempStringPtr++] = '6';
-        break;
-    case TR_76D:
-        tempString[tempStringPtr-1] = '7';
-        tempString[tempStringPtr++] = '6';
-        break;
-    default :
-        tempString[tempStringPtr++] = 'x';
-        break;
+    switch (moduleType) {
+        case TR_52D:
+            strcat(tempString, "52");
+            break;
+        case TR_58D_RJ:
+            strcat(tempString, "58");
+            break;
+        case TR_72D:
+            strcat(tempString, "72");
+            break;
+        case TR_53D:
+            strcat(tempString, "53");
+            break;
+        case TR_54D:
+            strcat(tempString, "54");
+            break;
+        case TR_55D:
+            strcat(tempString, "55");
+            break;
+        case TR_56D:
+            strcat(tempString, "56");
+            break;
+        case TR_76D:
+            strcat(tempString, "76");
+            break;
+        default:
+            strcat(tempString, "xx");
+            break;
     }
 
-    if(mcuType == PIC16LF1938)
-        tempString[tempStringPtr++]='D';
-    tempString[tempStringPtr++]='x';
-    tempString[tempStringPtr++] = 0;
-    strcat(tempString, "\n\r");
-    printf("Module type:       ");
-    printf("%s", tempString);
+    if (mcuType == PIC16LF1938) {
+        strcat(tempString, "D");
+    }
+    strcat(tempString, "x\n");
+    printf("Module type:\t\t%s", tempString);
 
     // print module MCU
-    printf("Module MCU:        ");
+    printf("Module MCU:\t\t");
     switch (mcuType) {
-    case PIC16LF819:
-        printf("PIC16LF819\n\r");
-        break;
-    case PIC16LF88:
-        printf("PIC16LF88\n\r");
-        break;
-    case PIC16F886:
-        printf("PIC16F886\n\r");
-        break;
-    case PIC16LF1938:
-        printf("PIC16LF1938\n\r");
-        break;
-    default:
-        printf("UNKNOWN\n\r");
-        break;
+        case PIC16LF819:
+            printf("PIC16LF819\n");
+            break;
+        case PIC16LF88:
+            printf("PIC16LF88\n");
+            break;
+        case PIC16F886:
+            printf("PIC16F886\n");
+            break;
+        case PIC16LF1938:
+            printf("PIC16LF1938\n");
+            break;
+        default:
+            printf("UNKNOWN\n");
+            break;
     }
 
     // print module MCU
-    printf("Module ID:         %.8X\n\r", moduleId);
+    printf("Module ID:\t\t%.8X\n", moduleId);
 
-    // print module IBK
-    printf("Module IBK:        ");
-    if ((sizeOfData == 32) && ((osVersionMajor > 4) || ((osVersionMajor == 4) && (osVersionMinor >= 3)))) {
-        for (cnt=16; cnt<32; cnt++)
-            printf("%.2x ", data[cnt]);
-        printf("\n\r");
-    } else {
-        printf("---\n\r");
+    if (osVersion >= 0x43) {
+        // print module IBK
+        printf("Module IBK:\t\t");
+        if (size == 32) {
+            for (uint8_t cnt = 16; cnt < 32; cnt++) {
+                printf("%.2x ", data[cnt]);
+            }
+            printf("\n");
+        } else {
+            printf("---\n");
+        }
     }
 
     // print OS version & build
-    printf("OS version:       %2X.%02XD (0x%04x)\n\r", osVersionMajor, osVersionMinor, osBuild);
+    printf("OS version:\t\t%X.%02XD (%04X)\n", osVersion >> 4, osVersion & 0xf, osBuild);
 
     // print module FCC certification
-    printf("FCC certification: ");
-    if (fccCerificate == FCC_CERTIFIED)
-        printf("YES\n\r");
-    else
-        printf("NO\n\r");
-
-    printf("\n\r");
+    printf("FCC certification:\t");
+    if (fccCertified == FCC_CERTIFIED) {
+        printf("YES\n");
+    } else {
+        printf("NO\n");
+    }
+    printf("\n");
 }
