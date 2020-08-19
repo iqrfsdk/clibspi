@@ -23,6 +23,7 @@
 // #define UP
 // #define UP2
 // #define OPIZ
+// #define OPIZ2
 // #define AXON
 
 #ifdef RPI
@@ -88,6 +89,24 @@
 
 #endif /* OPI */
 
+
+#ifdef OPIZ2
+
+/** PGM Switch GPIO. */
+#define PGM_SWITCH_GPIO (3)
+/** Bus enable GPIO. */
+#define BUS_ENABLE_GPIO (-1)
+#define SPI_ENABLE_GPIO (10)
+#define UART_ENABLE_GPIO (6)
+#define I2C_ENABLE_GPIO (7)
+/** Power enable GPIO. */
+#define POWER_ENABLE_GPIO (19)
+
+#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
+    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
+#endif
+
+#endif /* OPI2 */
 
 #ifdef AXON
 

@@ -661,6 +661,15 @@ int spi_iqrf_init(const char *dev)
 
     spiIqrfDefaultConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
     spiIqrfDefaultConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+    if (spiIqrfDefaultConfig.busEnableGpioPin == -1) {
+        spiIqrfDefaultConfig.spiEnableGpioPin = SPI_ENABLE_GPIO;
+        spiIqrfDefaultConfig.uartEnableGpioPin = UART_ENABLE_GPIO;
+        spiIqrfDefaultConfig.i2cEnableGpioPin = I2C_ENABLE_GPIO;
+    } else {
+        spiIqrfDefaultConfig.spiEnableGpioPin = -1;
+        spiIqrfDefaultConfig.uartEnableGpioPin = -1;
+        spiIqrfDefaultConfig.i2cEnableGpioPin = -1;
+    }
     spiIqrfDefaultConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
     spiIqrfDefaultConfig.trModuleReset = TR_MODULE_RESET_ENABLE;
 
@@ -696,7 +705,14 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     // Initialize PGM SW pin, SPI master enable pin & power enable
     clibspi_gpio_setup(spiIqrfConfig->pgmSwitchGpioPin, GPIO_DIRECTION_OUT, 0);
     clibspi_gpio_setup(spiIqrfConfig->powerEnableGpioPin, GPIO_DIRECTION_OUT, 1);
-    clibspi_gpio_setup(spiIqrfConfig->busEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+
+    if (spiIqrfConfig->busEnableGpioPin != -1) {
+        clibspi_gpio_setup(spiIqrfConfig->busEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+    } else {
+        clibspi_gpio_setup(spiIqrfConfig->spiEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+        clibspi_gpio_setup(spiIqrfConfig->uartEnableGpioPin, GPIO_DIRECTION_OUT, 0);
+        clibspi_gpio_setup(spiIqrfConfig->i2cEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+    }
 
     // Reset TR module
     if (spiIqrfConfig->trModuleReset == TR_MODULE_RESET_ENABLE)
@@ -711,12 +727,17 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
         return BASE_TYPES_OPER_OK;
     } else {
         clibspi_gpio_cleanup(spiIqrfConfig->powerEnableGpioPin);
-        clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
+        if (spiIqrfConfig->busEnableGpioPin != -1) {
+            clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
+        } else {
+            clibspi_gpio_cleanup(spiIqrfConfig->spiEnableGpioPin);
+            clibspi_gpio_cleanup(spiIqrfConfig->uartEnableGpioPin);
+            clibspi_gpio_cleanup(spiIqrfConfig->i2cEnableGpioPin);
+        }
         clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
         return BASE_TYPES_OPER_ERROR;
     }
 }
-
 
 /**
 * Gets current communication mode
@@ -1394,8 +1415,17 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 {
 
     // Disconnect SPI master from TR module
-    if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0) < 0)
-        return BASE_TYPES_OPER_ERROR;
+    if (spiIqrfConfig->busEnableGpioPin != -1) {
+        if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0) < 0)
+            return BASE_TYPES_OPER_ERROR;
+    } else {
+        if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 0) < 0)
+            return BASE_TYPES_OPER_ERROR;
+        if (clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0) < 0)
+            return BASE_TYPES_OPER_ERROR;
+        if (clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0) < 0)
+            return BASE_TYPES_OPER_ERROR;
+    }
 
     SLEEP(1);
 
@@ -1414,8 +1444,15 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 
     if (spiMasterEnableOutState != 0) {
         // Connect SPI master to TR module
-        if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1) < 0)
-            return BASE_TYPES_OPER_ERROR;
+        if (spiIqrfConfig->busEnableGpioPin != -1) {
+            if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1) < 0)
+                return BASE_TYPES_OPER_ERROR;
+        } else {
+            if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1) < 0)
+                return BASE_TYPES_OPER_ERROR;
+            if (clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 1) < 0)
+                return BASE_TYPES_OPER_ERROR;
+        }
     }
 
     return BASE_TYPES_OPER_OK;
@@ -1500,7 +1537,14 @@ int spi_iqrf_pe(void)
     if (status.dataNotReadyStatus == SPI_IQRF_SPI_READY_PROG)
         return BASE_TYPES_OPER_OK;
 
-    clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0);
+    if (spiIqrfConfig->busEnableGpioPin != -1) {
+        clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0);
+    } else {
+        clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 0);
+        clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
+        clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0);
+    }
+    
     clibspi_gpio_setValue(spiIqrfConfig->pgmSwitchGpioPin, 1);
 
     if (spi_reset_tr(0) != BASE_TYPES_OPER_OK)
@@ -1510,7 +1554,13 @@ int spi_iqrf_pe(void)
     SLEEP(500);
 
     clibspi_gpio_setValue(spiIqrfConfig->pgmSwitchGpioPin, 0);
-    clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1);
+    if (spiIqrfConfig->busEnableGpioPin != -1) {
+        clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1);
+    } else {
+        clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1);
+        clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
+        clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 1);
+    }
 
     // Sleep for 100ms
     SLEEP(100);
@@ -1591,7 +1641,14 @@ int spi_iqrf_destroy(void)
 
     // destroy used rpi_io library
     clibspi_gpio_cleanup(spiIqrfConfig->powerEnableGpioPin);
-    clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
+    if (spiIqrfConfig->busEnableGpioPin != -1) {
+        clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
+    } else {
+        clibspi_gpio_cleanup(spiIqrfConfig->spiEnableGpioPin);
+        clibspi_gpio_cleanup(spiIqrfConfig->uartEnableGpioPin);
+        clibspi_gpio_cleanup(spiIqrfConfig->i2cEnableGpioPin);
+    }
+    
     clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
 
     return spi_iqrf_close();
