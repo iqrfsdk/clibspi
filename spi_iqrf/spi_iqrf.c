@@ -653,40 +653,11 @@ static int checkDataLen(unsigned int dataLen)
 */
 int spi_iqrf_init(const char *dev)
 {
-    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-
     // Copy SPI device name
     if (strlen(dev) > SPI_DEV_CAPACITY)
         return BASE_TYPES_OPER_ERROR;
     else
         strcpy(spiIqrfDefaultConfig.spiDev, dev);
-
-    spiIqrfDefaultConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-    spiIqrfDefaultConfig.busEnableGpioPin = BUS_ENABLE_GPIO;  
-
-    if (spiIqrfDefaultConfig.busEnableGpioPin == -1) {
-#ifdef SPI_ENABLE_GPIO 
-        spiIqrfDefaultConfig.spiEnableGpioPin = SPI_ENABLE_GPIO;
-#else
-        spiIqrfDefaultConfig.spiEnableGpioPin = -1;
-#endif
-#ifdef UART_ENABLE_GPIO
-        spiIqrfDefaultConfig.uartEnableGpioPin = UART_ENABLE_GPIO;
-#else
-        spiIqrfDefaultConfig.uartEnableGpioPin = -1;
-#endif
-#ifdef I2C_ENABLE_GPIO
-        spiIqrfDefaultConfig.i2cEnableGpioPin = I2C_ENABLE_GPIO;
-#else
-        spiIqrfDefaultConfig.i2cEnableGpioPin = -1;
-#endif
-    } else {
-        spiIqrfDefaultConfig.spiEnableGpioPin = -1;
-        spiIqrfDefaultConfig.uartEnableGpioPin = -1;
-        spiIqrfDefaultConfig.i2cEnableGpioPin = -1;
-    }
-    spiIqrfDefaultConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
-    spiIqrfDefaultConfig.trModuleReset = TR_MODULE_RESET_ENABLE;
 
     return spi_iqrf_initAdvanced(&spiIqrfDefaultConfig);
 }
@@ -716,6 +687,39 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
         return BASE_TYPES_OPER_ERROR;
 
     spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
+
+    // Copy SPI device name
+    if (strlen(SPI_IQRF_DEFAULT_SPI_DEVICE) > SPI_DEV_CAPACITY)
+        return BASE_TYPES_OPER_ERROR;
+    else
+        strcpy (spiIqrfConfig->spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+
+    spiIqrfConfig->powerEnableGpioPin = POWER_ENABLE_GPIO;
+    spiIqrfConfig->busEnableGpioPin = BUS_ENABLE_GPIO;  
+
+    if (spiIqrfConfig->busEnableGpioPin == -1) {
+#ifdef SPI_ENABLE_GPIO 
+        spiIqrfConfig->spiEnableGpioPin = SPI_ENABLE_GPIO;
+#else
+        spiIqrfConfig->spiEnableGpioPin = -1;
+#endif
+#ifdef UART_ENABLE_GPIO
+        spiIqrfConfig->uartEnableGpioPin = UART_ENABLE_GPIO;
+#else
+        spiIqrfConfig->uartEnableGpioPin = -1;
+#endif
+#ifdef I2C_ENABLE_GPIO
+        spiIqrfConfig->i2cEnableGpioPin = I2C_ENABLE_GPIO;
+#else
+        spiIqrfConfig->i2cEnableGpioPin = -1;
+#endif
+    } else {
+        spiIqrfConfig->spiEnableGpioPin = -1;
+        spiIqrfConfig->uartEnableGpioPin = -1;
+        spiIqrfConfig->i2cEnableGpioPin = -1;
+    }
+    spiIqrfConfig->pgmSwitchGpioPin = PGM_SWITCH_GPIO;
+    spiIqrfConfig->trModuleReset = TR_MODULE_RESET_ENABLE;
 
     // Initialize PGM SW pin, SPI master enable pin & power enable
     clibspi_gpio_setup(spiIqrfConfig->pgmSwitchGpioPin, GPIO_DIRECTION_OUT, 0);
