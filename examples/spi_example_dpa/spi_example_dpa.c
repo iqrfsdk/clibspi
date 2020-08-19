@@ -175,12 +175,6 @@ int openCommunication(void)
 {
     int operResult;
 
-    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-    mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-    mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
-    mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
-    mySpiIqrfConfig.trModuleReset = TR_MODULE_RESET_ENABLE;
-
     operResult = spi_iqrf_initAdvanced(&mySpiIqrfConfig);
     if (operResult < 0) {
         printf("Initialization failed: %d \n", operResult);

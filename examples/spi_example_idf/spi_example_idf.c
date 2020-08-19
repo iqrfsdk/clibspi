@@ -53,12 +53,6 @@ int main(void)
 
     printf("TR module identification demo application.\n\r");
 
-    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
-    mySpiIqrfConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-    mySpiIqrfConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
-    mySpiIqrfConfig.pgmSwitchGpioPin = PGM_SWITCH_GPIO;
-    mySpiIqrfConfig.trModuleReset = TR_MODULE_RESET_ENABLE;
-
     spi_iqrf_initAdvanced(&mySpiIqrfConfig);
 
     printf("Entering programming mode.\n\r");

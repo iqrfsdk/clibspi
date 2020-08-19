@@ -653,6 +653,8 @@ static int checkDataLen(unsigned int dataLen)
 */
 int spi_iqrf_init(const char *dev)
 {
+    strcpy (mySpiIqrfConfig.spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
+
     // Copy SPI device name
     if (strlen(dev) > SPI_DEV_CAPACITY)
         return BASE_TYPES_OPER_ERROR;
@@ -660,11 +662,24 @@ int spi_iqrf_init(const char *dev)
         strcpy(spiIqrfDefaultConfig.spiDev, dev);
 
     spiIqrfDefaultConfig.powerEnableGpioPin = POWER_ENABLE_GPIO;
-    spiIqrfDefaultConfig.busEnableGpioPin = BUS_ENABLE_GPIO;
+    spiIqrfDefaultConfig.busEnableGpioPin = BUS_ENABLE_GPIO;  
+
     if (spiIqrfDefaultConfig.busEnableGpioPin == -1) {
+#ifdef SPI_ENABLE_GPIO 
         spiIqrfDefaultConfig.spiEnableGpioPin = SPI_ENABLE_GPIO;
+#else
+        spiIqrfDefaultConfig.spiEnableGpioPin = -1;
+#endif
+#ifdef UART_ENABLE_GPIO
         spiIqrfDefaultConfig.uartEnableGpioPin = UART_ENABLE_GPIO;
+#else
+        spiIqrfDefaultConfig.uartEnableGpioPin = -1;
+#endif
+#ifdef I2C_ENABLE_GPIO
         spiIqrfDefaultConfig.i2cEnableGpioPin = I2C_ENABLE_GPIO;
+#else
+        spiIqrfDefaultConfig.i2cEnableGpioPin = -1;
+#endif
     } else {
         spiIqrfDefaultConfig.spiEnableGpioPin = -1;
         spiIqrfDefaultConfig.uartEnableGpioPin = -1;
