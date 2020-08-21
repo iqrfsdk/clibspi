@@ -695,7 +695,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
         strcpy (spiIqrfConfig->spiDev, SPI_IQRF_DEFAULT_SPI_DEVICE);
 
     spiIqrfConfig->powerEnableGpioPin = POWER_ENABLE_GPIO;
-    spiIqrfConfig->busEnableGpioPin = BUS_ENABLE_GPIO;  
+    spiIqrfConfig->busEnableGpioPin = BUS_ENABLE_GPIO;
 
     if (spiIqrfConfig->busEnableGpioPin == -1) {
 #ifdef SPI_ENABLE_GPIO 
@@ -730,7 +730,7 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     } else {
         clibspi_gpio_setup(spiIqrfConfig->spiEnableGpioPin, GPIO_DIRECTION_OUT, 1);
         clibspi_gpio_setup(spiIqrfConfig->uartEnableGpioPin, GPIO_DIRECTION_OUT, 0);
-        clibspi_gpio_setup(spiIqrfConfig->i2cEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+        clibspi_gpio_setup(spiIqrfConfig->i2cEnableGpioPin, GPIO_DIRECTION_OUT, 0);
     }
 
     // Reset TR module
