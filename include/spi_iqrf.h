@@ -139,10 +139,6 @@ typedef struct spi_iqrf_config_struct
     tr_module_reset trModuleReset;  // enable / disable TR module reset during library initialization
 } spi_iqrf_config_struct;
 
-/** Default SPI device. */
-#ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
-    #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
-#endif //SPI_IQRF_DEFAULT_SPI_DEVICE
 
 /** Programming targets */
 // Constants are used in case. Therefore, they can not be defined as static const uint8_t.

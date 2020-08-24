@@ -1469,8 +1469,6 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
         } else {
             if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1) < 0)
                 return BASE_TYPES_OPER_ERROR;
-            if (clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 1) < 0)
-                return BASE_TYPES_OPER_ERROR;
         }
     }
 
@@ -1578,7 +1576,7 @@ int spi_iqrf_pe(void)
     } else {
         clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1);
         clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
-        clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 1);
+        clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0);
     }
 
     // Sleep for 100ms
