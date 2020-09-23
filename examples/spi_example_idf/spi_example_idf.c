@@ -35,11 +35,6 @@
 /************************************/
 void decodeIdfData(unsigned char *data, unsigned int sizeOfData);
 
-/************************************/
-/* Private variables                */
-/** SPI IQRF configuration structure */
-spi_iqrf_config_struct mySpiIqrfConfig;
-
 /**
  * Main entry-point for this application.
  *
@@ -53,7 +48,7 @@ int main(void)
 
     printf("TR module identification demo application.\n\r");
 
-    spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+    spi_iqrf_initDefault();
 
     printf("Entering programming mode.\n\r");
 

@@ -51,9 +51,6 @@ uint8_t IqrfPgmCodeLineBuffer[64];
 /** SPI IQRF status */
 spi_iqrf_SPIStatus spiStatus;
 
-/** SPI IQRF configuration structure */
-spi_iqrf_config_struct mySpiIqrfConfig;
-
 FILE *file = NULL;
 
 /**
@@ -77,7 +74,7 @@ int main ( int argc, char *argv[] )
         if ( file == 0 ) {
             printf( "Could not open file\n\r" );
         } else {
-            spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+            spi_iqrf_initDefault();
 
             printf("Entering programming mode.\n\r");
             // enter programming mode

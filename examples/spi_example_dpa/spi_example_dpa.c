@@ -94,9 +94,6 @@ int communicationOpen = -1;
 /** DPA response. */
 T_DPA_PACKET dpaResponsePacket;
 
-/** SPI IQRF configuration structure */
-spi_iqrf_config_struct mySpiIqrfConfig;
-
 /**
  * Main entry-point for this application.
  *
@@ -175,7 +172,7 @@ int openCommunication(void)
 {
     int operResult;
 
-    operResult = spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+    operResult = spi_iqrf_initDefault();
     if (operResult < 0) {
         printf("Initialization failed: %d \n", operResult);
         return operResult;

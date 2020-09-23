@@ -44,9 +44,6 @@ const unsigned long INTERVAL_MS = 10;
 /** SPI IQRF status */
 spi_iqrf_SPIStatus spiStatus;
 
-/** SPI IQRF configuration structure */
-spi_iqrf_config_struct mySpiIqrfConfig;
-
 /**
  * Main entry-point for this application.
  *
@@ -80,7 +77,7 @@ int main ( int argc, char *argv[] )
         return(-2);
     }
 
-    spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+    spi_iqrf_initDefault();
 
     printf("Entering programming mode.\n\r");
     // enter programming mode

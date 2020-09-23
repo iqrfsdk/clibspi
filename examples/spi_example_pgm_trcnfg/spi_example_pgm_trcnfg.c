@@ -50,9 +50,6 @@ uint8_t RfPgmCfg;
 /** SPI IQRF status */
 spi_iqrf_SPIStatus spiStatus;
 
-/** SPI IQRF configuration structure */
-spi_iqrf_config_struct mySpiIqrfConfig;
-
 FILE *file = NULL;
 
 /**
@@ -103,7 +100,7 @@ int main ( int argc, char *argv[] )
                 RfPgmCfg = fgetc(file);
 
                 // initialize clibspi
-                spi_iqrf_initAdvanced(&mySpiIqrfConfig);
+                spi_iqrf_initDefault();
 
                 printf("Entering programming mode.\n\r");
                 // enter programming mode
