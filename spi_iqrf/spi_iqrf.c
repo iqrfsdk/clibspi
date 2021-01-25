@@ -716,15 +716,26 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
     spiIqrfConfig = (spi_iqrf_config_struct *)configStruct;
 
     // Initialize PGM SW pin, SPI master enable pin & power enable
-    clibspi_gpio_setup(spiIqrfConfig->pgmSwitchGpioPin, GPIO_DIRECTION_OUT, 0);
-    clibspi_gpio_setup(spiIqrfConfig->powerEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+    if (spiIqrfConfig->pgmSwitchGpioPin != -1) {
+        clibspi_gpio_setup(spiIqrfConfig->pgmSwitchGpioPin, GPIO_DIRECTION_OUT, 0);
+    }
+
+    if (spiIqrfConfig->powerEnableGpioPin != -1) {
+        clibspi_gpio_setup(spiIqrfConfig->powerEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+    }
 
     if (spiIqrfConfig->busEnableGpioPin != -1) {
         clibspi_gpio_setup(spiIqrfConfig->busEnableGpioPin, GPIO_DIRECTION_OUT, 1);
     } else {
-        clibspi_gpio_setup(spiIqrfConfig->spiEnableGpioPin, GPIO_DIRECTION_OUT, 1);
-        clibspi_gpio_setup(spiIqrfConfig->uartEnableGpioPin, GPIO_DIRECTION_OUT, 0);
-        clibspi_gpio_setup(spiIqrfConfig->i2cEnableGpioPin, GPIO_DIRECTION_OUT, 0);
+        if (spiIqrfConfig->spiEnableGpioPin != -1) {
+            clibspi_gpio_setup(spiIqrfConfig->spiEnableGpioPin, GPIO_DIRECTION_OUT, 1);
+        }
+        if (spiIqrfConfig->uartEnableGpioPin != -1) {
+            clibspi_gpio_setup(spiIqrfConfig->uartEnableGpioPin, GPIO_DIRECTION_OUT, 0);
+        }
+        if (spiIqrfConfig->i2cEnableGpioPin != -1) {
+            clibspi_gpio_setup(spiIqrfConfig->i2cEnableGpioPin, GPIO_DIRECTION_OUT, 0);
+        }
     }
 
     // Reset TR module
@@ -743,11 +754,19 @@ int spi_iqrf_initAdvanced(const spi_iqrf_config_struct *configStruct)
         if (spiIqrfConfig->busEnableGpioPin != -1) {
             clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
         } else {
-            clibspi_gpio_cleanup(spiIqrfConfig->spiEnableGpioPin);
-            clibspi_gpio_cleanup(spiIqrfConfig->uartEnableGpioPin);
-            clibspi_gpio_cleanup(spiIqrfConfig->i2cEnableGpioPin);
+            if (spiIqrfConfig->spiEnableGpioPin != -1) {
+                clibspi_gpio_cleanup(spiIqrfConfig->spiEnableGpioPin);
+            }
+            if (spiIqrfConfig->uartEnableGpioPin != -1) {
+                clibspi_gpio_cleanup(spiIqrfConfig->uartEnableGpioPin);
+            }
+            if (spiIqrfConfig->i2cEnableGpioPin != -1) {
+                clibspi_gpio_cleanup(spiIqrfConfig->i2cEnableGpioPin);
+            }
         }
-        clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
+        if (spiIqrfConfig->pgmSwitchGpioPin != -1) {
+            clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
+        }
         return BASE_TYPES_OPER_ERROR;
     }
 }
@@ -1426,18 +1445,23 @@ int spi_iqrf_download(int target, const unsigned char *dataToWrite, unsigned int
 */
 static int spi_reset_tr(unsigned int spiMasterEnableOutState)
 {
-
     // Disconnect SPI master from TR module
     if (spiIqrfConfig->busEnableGpioPin != -1) {
         if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0) < 0)
             return BASE_TYPES_OPER_ERROR;
     } else {
-        if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 0) < 0)
-            return BASE_TYPES_OPER_ERROR;
-        if (clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0) < 0)
-            return BASE_TYPES_OPER_ERROR;
-        if (clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0) < 0)
-            return BASE_TYPES_OPER_ERROR;
+        if (spiIqrfConfig->spiEnableGpioPin != -1) {
+            if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 0) < 0)
+                return BASE_TYPES_OPER_ERROR;
+        }
+        if (spiIqrfConfig->uartEnableGpioPin != -1) {
+            if (clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0) < 0)
+                return BASE_TYPES_OPER_ERROR;
+        }
+        if (spiIqrfConfig->i2cEnableGpioPin != -1) {
+            if (clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0) < 0)
+                return BASE_TYPES_OPER_ERROR;
+        }
     }
 
     SLEEP(1);
@@ -1461,8 +1485,10 @@ static int spi_reset_tr(unsigned int spiMasterEnableOutState)
             if (clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1) < 0)
                 return BASE_TYPES_OPER_ERROR;
         } else {
-            if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1) < 0)
-                return BASE_TYPES_OPER_ERROR;
+            if (spiIqrfConfig->spiEnableGpioPin != -1) {
+                if (clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1) < 0)
+                    return BASE_TYPES_OPER_ERROR;
+            }
         }
     }
 
@@ -1551,12 +1577,22 @@ int spi_iqrf_pe(void)
     if (spiIqrfConfig->busEnableGpioPin != -1) {
         clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 0);
     } else {
-        clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 0);
-        clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
-        clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0);
+        if (spiIqrfConfig->spiEnableGpioPin != -1) {
+            clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 0);
+        }
+        if (spiIqrfConfig->uartEnableGpioPin != -1) {
+            clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
+        }
+        if (spiIqrfConfig->i2cEnableGpioPin != -1) {
+            clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0);
+        }
     }
     
-    clibspi_gpio_setValue(spiIqrfConfig->pgmSwitchGpioPin, 1);
+    if (spiIqrfConfig->pgmSwitchGpioPin != -1) {
+        clibspi_gpio_setValue(spiIqrfConfig->pgmSwitchGpioPin, 1);
+    } else {
+        return SPI_HW_ERROR_PGMPIN;
+    }
 
     if (spi_reset_tr(0) != BASE_TYPES_OPER_OK)
         return BASE_TYPES_OPER_ERROR;
@@ -1568,9 +1604,15 @@ int spi_iqrf_pe(void)
     if (spiIqrfConfig->busEnableGpioPin != -1) {
         clibspi_gpio_setValue(spiIqrfConfig->busEnableGpioPin, 1);
     } else {
-        clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1);
-        clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
-        clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0);
+        if (spiIqrfConfig->spiEnableGpioPin != -1) {
+            clibspi_gpio_setValue(spiIqrfConfig->spiEnableGpioPin, 1);
+        }
+        if (spiIqrfConfig->uartEnableGpioPin != -1) {
+            clibspi_gpio_setValue(spiIqrfConfig->uartEnableGpioPin, 0);
+        }
+        if (spiIqrfConfig->i2cEnableGpioPin != -1) {
+            clibspi_gpio_setValue(spiIqrfConfig->i2cEnableGpioPin, 0);
+        }
     }
 
     // Sleep for 100ms
@@ -1642,7 +1684,6 @@ int spi_iqrf_pt(void)
 */
 int spi_iqrf_destroy(void)
 {
-
     if (libIsInitialized == 0)
         return BASE_TYPES_LIB_NOT_INITIALIZED;
 
@@ -1655,12 +1696,20 @@ int spi_iqrf_destroy(void)
     if (spiIqrfConfig->busEnableGpioPin != -1) {
         clibspi_gpio_cleanup(spiIqrfConfig->busEnableGpioPin);
     } else {
-        clibspi_gpio_cleanup(spiIqrfConfig->spiEnableGpioPin);
-        clibspi_gpio_cleanup(spiIqrfConfig->uartEnableGpioPin);
-        clibspi_gpio_cleanup(spiIqrfConfig->i2cEnableGpioPin);
+        if (spiIqrfConfig->spiEnableGpioPin != -1) {
+            clibspi_gpio_cleanup(spiIqrfConfig->spiEnableGpioPin);
+        }
+        if (spiIqrfConfig->uartEnableGpioPin != -1) {
+            clibspi_gpio_cleanup(spiIqrfConfig->uartEnableGpioPin);
+        }
+        if (spiIqrfConfig->i2cEnableGpioPin != -1) {
+            clibspi_gpio_cleanup(spiIqrfConfig->i2cEnableGpioPin);
+        }
     }
     
-    clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
+    if (spiIqrfConfig->pgmSwitchGpioPin != -1) {
+        clibspi_gpio_cleanup(spiIqrfConfig->pgmSwitchGpioPin);
+    }
 
     return spi_iqrf_close();
 }

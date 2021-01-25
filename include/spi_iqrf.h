@@ -52,6 +52,8 @@ typedef enum spi_iqrf_Errors {
     SPI_IQRF_ERROR_BAD_STATUS = -10,
     ///< An enum constant representing the spi iqrf error CRCS mismatch
     SPI_IQRF_ERROR_CRCS = -11 /**< CRCS mismatch */
+    ///< Not defined PGM switch pin
+    SPI_HW_ERROR_PGMPIN = -12 /**< PGM pin not defined */
 } spi_iqrf_Errors;
 
 /**

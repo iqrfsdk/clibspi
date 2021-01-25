@@ -29,9 +29,9 @@
 #ifdef RPI
 
 /** PGM Switch GPIO. */
-#define PGM_SWITCH_GPIO (22)
+#define PGM_SWITCH_GPIO (-1)
 /** Bus enable GPIO. */
-#define BUS_ENABLE_GPIO (7)
+#define BUS_ENABLE_GPIO (-1)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (23)
 
@@ -45,9 +45,9 @@
 #ifdef UP
 
 /** PGM Switch GPIO. */
-#define PGM_SWITCH_GPIO (22)
+#define PGM_SWITCH_GPIO (-1)
 /** Bus enable GPIO. */
-#define BUS_ENABLE_GPIO (7)
+#define BUS_ENABLE_GPIO (-1)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (23)
 
@@ -61,9 +61,9 @@
 #ifdef UP2
 
 /** PGM Switch GPIO. */
-#define PGM_SWITCH_GPIO (22)
+#define PGM_SWITCH_GPIO (-1)
 /** Bus enable GPIO. */
-#define BUS_ENABLE_GPIO (7)
+#define BUS_ENABLE_GPIO (-1)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (23)
 
