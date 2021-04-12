@@ -34,6 +34,12 @@
 #define BUS_ENABLE_GPIO (-1)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (23)
+/** I2C enable GPIO */
+#define I2C_ENABLE_GPIO (-1)
+/** SPI enable GPIO */
+#define SPI_ENABLE_GPIO (-1)
+/** UART enable GPIO */
+#define UART_ENABLE_GPIO (-1)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
     #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.0"
@@ -50,6 +56,12 @@
 #define BUS_ENABLE_GPIO (-1)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (23)
+/** I2C enable GPIO */
+#define I2C_ENABLE_GPIO (-1)
+/** SPI enable GPIO */
+#define SPI_ENABLE_GPIO (-1)
+/** UART enable GPIO */
+#define UART_ENABLE_GPIO (-1)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
     #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev2.0"
@@ -66,6 +78,13 @@
 #define BUS_ENABLE_GPIO (-1)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (23)
+/** I2C enable GPIO */
+#define I2C_ENABLE_GPIO (-1)
+/** SPI enable GPIO */
+#define SPI_ENABLE_GPIO (-1)
+/** UART enable GPIO */
+#define UART_ENABLE_GPIO (-1)
+
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
     #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
@@ -82,6 +101,13 @@
 #define BUS_ENABLE_GPIO (10)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (19)
+/** I2C enable GPIO */
+#define I2C_ENABLE_GPIO (-1)
+/** SPI enable GPIO */
+#define SPI_ENABLE_GPIO (-1)
+/** UART enable GPIO */
+#define UART_ENABLE_GPIO (-1)
+
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
     #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev1.0"
@@ -116,6 +142,12 @@
 #define BUS_ENABLE_GPIO (18)
 /** Power enable GPIO. */
 #define POWER_ENABLE_GPIO (19)
+/** I2C enable GPIO */
+#define I2C_ENABLE_GPIO (-1)
+/** SPI enable GPIO */
+#define SPI_ENABLE_GPIO (-1)
+/** UART enable GPIO */
+#define UART_ENABLE_GPIO (-1)
 
 #ifndef SPI_IQRF_DEFAULT_SPI_DEVICE
     #define SPI_IQRF_DEFAULT_SPI_DEVICE "/dev/spidev0.3"
