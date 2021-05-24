@@ -132,12 +132,12 @@ typedef struct spi_iqrf_config_struct
 {
     /** Device file name*/
     char spiDev[SPI_DEV_CAPACITY+1];// system path to SPI device
-    int8_t powerEnableGpioPin;     // GPIO to enable power supply to TR module
-    int8_t busEnableGpioPin;       // GPIO to enable function of SPI bus
-    int8_t pgmSwitchGpioPin;       // GPIO to switch TR module to PGM mode
-    int8_t spiEnableGpioPin;       // GPIO to enable function of SPI bus
-    int8_t uartEnableGpioPin;      // GPIO to enable function of UART bus
-    int8_t i2cEnableGpioPin;       // GPIO to enable function of I2C bus
+    int64_t powerEnableGpioPin;     // GPIO to enable power supply to TR module
+    int64_t busEnableGpioPin;       // GPIO to enable function of SPI bus
+    int64_t pgmSwitchGpioPin;       // GPIO to switch TR module to PGM mode
+    int64_t spiEnableGpioPin;       // GPIO to enable function of SPI bus
+    int64_t uartEnableGpioPin;      // GPIO to enable function of UART bus
+    int64_t i2cEnableGpioPin;       // GPIO to enable function of I2C bus
     tr_module_reset trModuleReset;  // enable / disable TR module reset during library initialization
 } spi_iqrf_config_struct;
 
