@@ -1,0 +1,42 @@
+stages:
+  - build
+
+.ccache-template: &ccache-template
+  before_script:
+    - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
+    - export CCACHE_COMPILERCHECK="content"
+    - export CCACHE_COMPRESS="true"
+    - export CCACHE_BASEDIR="$PWD"
+    - export CCACHE_DIR="${CCACHE_BASEDIR}/.ccache"
+    - ccache --zero-stats --show-stats
+    - echo "CCACHEDIR=~/.ccache" > ~/.pbuilderrc
+  after_script:
+    - export CCACHE_DIR="${PWD}/.ccache"
+    - ccache --show-stats
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - .ccache/
+
+build:
+  stage: build
+  image: iqrftech/debian-c-builder:debian-trixie-amd64
+  <<: *ccache-template
+  before_script:
+    - !reference [.ccache-template, before_script]
+    - '[[ "${COMPILER}" == "clang" ]] && apt-get update && apt-get install -y clang'
+    - '[[ "${BUILD_SPI_JAVASTUB}" == "1" ]] && apt-get update && apt-get install -y default-jre default-jdk'
+  script:
+    - 'export CC=$(if [[ "${COMPILER}" == "gcc" ]]; then echo "gcc"; else echo "clang"; fi)'
+    - 'export CXX=$(if [[ "${COMPILER}" == "gcc" ]]; then echo "g++"; else echo "clang++"; fi)'
+    - 'git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"'
+    - 'cmake -Bbuild -H. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DUSE_CCACHE=TRUE'
+    - 'cmake --build build'
+  parallel:
+    matrix:
+      - COMPILER:
+          - gcc
+          - clang
+        BUILD_SPI_JAVASTUB:
+          - "0"
+          - "1"

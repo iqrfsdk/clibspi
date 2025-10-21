@@ -1,7 +1,8 @@
 ﻿# SPI-IQRF
 
-[![Build Status](https://travis-ci.org/iqrfsdk/clibspi.svg?branch=master)](https://travis-ci.org/iqrfsdk/clibspi)
+[![Build Status](https://gitlab.iqrf.org/open-source/iqrf-sdk/clibspi/badges/master/pipeline.svg)](https://gitlab.iqrf.org/open-source/iqrf-sdk/clibspi/pipelines)
 [![Build Status](https://img.shields.io/appveyor/ci/spinarr/clibspi/master.svg)](https://ci.appveyor.com/project/spinarr/clibspi)
+[![Apache License](https://img.shields.io/badge/license-Apache2-blue.svg)](LICENSE)
 
 SPI master driver for Raspberry Pi support of IQRF DCTR-5xDx and 7xDx transceiver modules with `OS v3.08D and higher`.
 IQRF module is connected to Raspberry Pi platform via [KON-RASP-01](http://www.iqrf.org/products/kon-rasp-01).
@@ -33,7 +34,7 @@ Library contains following folders
 
 Quick command line compilation on the target
 ```bash
-git clone https://github.com/iqrfsdk/clibspi.git
+git clone https://gitlab.iqrf.org/open-source/iqrf-sdk/clibspi.git
 cd clibspi
 mkdir -p .build; cd .build; cmake ..; make -j4
 ```
