@@ -3,7 +3,7 @@
 SPI master driver for Raspberry Pi support of IQRF DCTR-5xDx and 7xDx transceiver modules with `OS v3.08D and higher`.
 
 ### Device's mode 
-Set according to document: SPI. Implementation in IQRF TR modules (http://www.iqrf.org/weben/downloads.php?id=85)
+Set according to document: SPI. Implementation in IQRF TR modules (https://static.iqrf.org/Tech_Guide_IQRF_SPI_TR-7xD+7xG_230831.pdf)
 - Idle clock polarity: low 
 - Clock edge: output data on SCK rising edge
 - Bitrate: 250 kHz
